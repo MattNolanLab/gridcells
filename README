@@ -1,0 +1,54 @@
+What is ArmaNpy?
+----------------
+
+ArmaNpy is a set of SWIG interface files which allows for generating
+Python bindings to C++ code which uses the Armadillo matrix library.
+From within Python any Armadillo matrices are represented as NumPy matrices.
+This is possible due to the same memory layout used.
+Copying of memory is avoided whenever possible.
+
+Usage
+-----
+
+See the file test/test.i how to use ArmaNpy to generate bindings for a set of classes
+defines in test/test.hpp and test/test.cpp.
+See test/armanpy_tests.py for the Python side of usage (Note that this file is jut unit tests).
+
+How to compile and run the test?
+--------------------------------
+
+1) Use CMake to generate your build system based on the provided CMakeLists file in the test dir.
+2) Build the resulting project.
+3) Run the Python script armanpy_tests.py
+
+From the command line this can be done as follows (adapt to your path settings and use '\' instedead of '/' on Windows):
+
+cd /path/to/armanpy/test
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DARMADILLO_INCLUDE_DIR=/path/to/your/armadillo/include
+cmake --build . --config Release
+cd ..
+python armanpy_tests.py --verbose
+
+Credits
+-------
+
+The idea of wrapping armadillo matrices py NumPy arrays was taken from Michael Forbes`
+https://bitbucket.org/mforbes/swig_cpp_python/src/cd7cef820273?at=default.
+
+Copyright
+---------
+
+2012, Thomas Natschläger, thomas.natschlaeger@gmail.com
+
+License
+-------
+
+This software is distributed under the terms and conditions of the GPL.
+
+TODO
+----
+
+* allow for const arma::Mat< ... > * (should be the same as const arma::Mat< ... > &)
+* allow for arma::Mat< ... > *( should be the same as arma::Mat< ... > &)
