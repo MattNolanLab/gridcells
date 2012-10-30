@@ -1,4 +1,8 @@
 /* -*- C -*-  (not really, but good for syntax highlighting) */
+
+/* This file is included for convinience.
+   It is taken from https://github.com/numpy/numpy/tree/master/doc/swig */
+   
 #ifdef SWIGPYTHON
 
 %{

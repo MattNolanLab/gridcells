@@ -6,6 +6,7 @@ Python bindings to C++ code which uses the Armadillo matrix library.
 From within Python any Armadillo matrices are represented as NumPy matrices.
 This is possible due to the same memory layout used.
 Copying of memory is avoided whenever possible.
+It also supports boost:shared_ptr wrapped return values of Armadillo matrices.
 
 Usage
 -----
@@ -31,6 +32,10 @@ cmake --build . --config Release
 cd ..
 python armanpy_tests.py --verbose
 
+*Note* : The Release build type is used bcs on Windows a typical Python distribution does not
+come with the debug version of the Python libraries. Hence, the build would fail for the Debug
+configuration.
+
 Credits
 -------
 
@@ -40,12 +45,18 @@ https://bitbucket.org/mforbes/swig_cpp_python/src/cd7cef820273?at=default.
 Copyright
 ---------
 
-2012, Thomas Natschläger, thomas.natschlaeger@gmail.com
+Copyright (C) 2008-2012 Thomas Natschläger (thomas.natschlaeger@gmail.com)
 
 License
 -------
 
-This software is distributed under the terms and conditions of the GPL.
+ArmaNpy is provided without any warranty of fitness
+for any purpose. You can redistribute this file
+and/or modify it under the terms of the GNU
+Lesser General Public License (LGPL) as published
+by the Free Software Foundation, either version 3
+of the License or (at your option) any later version.
+(see http://www.opensource.org/licenses for more info)
 
 TODO
 ----
