@@ -12,7 +12,23 @@
 #ifndef _TEST_HPP_
 #define _TEST_HPP_
 
-#include "dlldefines.h"
+/* Cmake will define test_EXPORTS on Windows when it
+configures to build a shared library. If you are going to use
+another build system on windows or create the visual studio
+projects by hand you need to define test_EXPORTS when
+building a DLL on windows.
+*/
+// We are using the Visual Studio Compiler and building Shared libraries
+
+#if defined (_WIN32)
+	  #if defined(armanpytest_EXPORTS)
+		#define DLLEXPORT __declspec(dllexport)
+	  #else
+		#define DLLEXPORT __declspec(dllimport)
+	  #endif /* pcsim_EXPORTS */
+#else /* defined (_WIN32) */
+		#define DLLEXPORT
+#endif
 
 #ifndef SWIG
 #undef ARMA_NO_DEBUG

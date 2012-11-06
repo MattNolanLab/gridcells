@@ -11,7 +11,7 @@
 
 cmake_minimum_required(VERSION 2.8.5 FATAL_ERROR)
 
-project( armanpytest )
+project( armanpy_example )
 
 SET( CMAKE_VERBOSE_MAKEFILE ON )
 
@@ -99,13 +99,11 @@ include_directories(
 	${ARMADILLO_INCLUDE_DIR} 
 )
 
-set( TEST_LIBRARY_NAME armanpytest )
-
-add_library( ${TEST_LIBRARY_NAME} SHARED test.cpp test.hpp )
+add_library( armanpyexample SHARED example.cpp example.hpp )
 
 SET( CMAKE_SWIG_OUTDIR "${PROJECT_BINARY_DIR}/bin" )
-set_source_files_properties( test.i PROPERTIES CPLUSPLUS ON)
-set_source_files_properties( test.i PROPERTIES SWIG_FLAGS "-includeall;-ignoremissing" ) # ;-debug-tmused;-debug-typedef;-debug-typemap" )
-swig_add_module( armanpytest python test.i )
-swig_link_libraries( armanpytest ${TEST_LIBRARY_NAME} ${PYTHON_LIBRARIES} )
-set( SWIG_MODULE_armanpytest_EXTRA_DEPS armanpy.i numpy.i test.cpp test.hpp )
+set_source_files_properties( example.i PROPERTIES CPLUSPLUS ON)
+set_source_files_properties( example.i PROPERTIES SWIG_FLAGS "-includeall;-ignoremissing" ) # ;-debug-tmused;-debug-typedef;-debug-typemap" )
+swig_add_module( armanpyexample python example.i )
+swig_link_libraries( armanpyexample armanpyexample ${PYTHON_LIBRARIES} )
+set( SWIG_MODULE_armanpytest_EXTRA_DEPS armanpy.i numpy.i example.cpp example.hpp )

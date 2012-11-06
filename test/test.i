@@ -17,7 +17,7 @@
 #include "test.hpp"
 %}
 
-/* We need thos for boost_shared::ptr support */
+/* We need this for boost_shared::ptr support */
 %include <boost_shared_ptr.i>
 
 /* Now include ArmaNpy typemaps */

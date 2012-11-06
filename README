@@ -11,28 +11,28 @@ It also supports boost:shared_ptr wrapped return values of Armadillo matrices.
 Usage
 -----
 
-See the file test/test.i how to use ArmaNpy to generate bindings for a set of classes
-defines in test/test.hpp and test/test.cpp.
-See test/armanpy_tests.py for the Python side of usage (Note that this file is jut unit tests).
+See the file example/example.i and test/test.i how to use ArmaNpy to generate bindings for a set of classes
+defined in example/example.hpp and test/test.hpp.
+See example/example.py and test/armanpy_tests.py for the Python side of usage (Note that armanpy_tests.py is jut unit tests).
 
-How to compile and run the test?
---------------------------------
+How to compile and run the example and the tests?
+-------------------------------------------------
 
-1) Use CMake to generate your build system based on the provided CMakeLists file in the test dir.
+1) Use CMake to generate your build system based on the provided CMakeLists file in the example or test dir.
 2) Build the resulting project.
-3) Run the Python script armanpy_tests.py
+3) Run the Python script example.py or armanpy_tests.py
 
-From the command line this can be done as follows (adapt to your path settings and use '\' instedead of '/' on Windows):
+From the command line this can be done as follows for the example dir (adapt to your path settings and use '\' instedead of '/' on Windows). The same holds for the test dir.
 
-cd /path/to/armanpy/test
+cd /path/to/armanpy/example
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DARMADILLO_INCLUDE_DIR=/path/to/your/armadillo/include
 cmake --build . --config Release
 cd ..
-python armanpy_tests.py --verbose
+python example.py --verbose
 
-*Note* : The Release build type is used bcs on Windows a typical Python distribution does not
+*Note* : -DCMAKE_BUILD_TYPE=Release is used bcs on Windows a typical Python distribution does not
 come with the debug version of the Python libraries. Hence, the build would fail for the Debug
 configuration.
 
