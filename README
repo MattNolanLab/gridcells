@@ -1,24 +1,24 @@
 What is ArmaNpy?
 ----------------
 
-ArmaNpy is a set of SWIG interface files which allows for generating
+ArmaNpy is a set of SWIG interface files which allows generating
 Python bindings to C++ code which uses the Armadillo matrix library.
 From within Python any Armadillo matrices are represented as NumPy matrices.
 This is possible due to the same memory layout used.
 Copying of memory is avoided whenever possible.
-It also supports boost:shared_ptr wrapped return values of Armadillo matrices.
+It also supports boost::shared_ptr wrapped return values of Armadillo matrices.
 
 Usage
 -----
 
 See the file example/example.i and test/test.i how to use ArmaNpy to generate bindings for a set of classes
 defined in example/example.hpp and test/test.hpp.
-See example/example.py and test/armanpy_tests.py for the Python side of usage (Note that armanpy_tests.py is jut unit tests).
+See example/example.py and test/armanpy_tests.py for the Python side of usage (note that armanpy_tests.py is just unit tests).
 
 How to compile and run the example and the tests?
 -------------------------------------------------
 
-1) Use CMake to generate your build system based on the provided CMakeLists file in the example or test dir.
+1) Use CMake to generate your build system based on the provided CMakeLists.txt file in the example or test dir.
 2) Build the resulting project.
 3) Run the Python script example.py or armanpy_tests.py
 

@@ -1,5 +1,5 @@
 // Copyright (C) 2012 thomas.natschlaeger@gmail.com
-// 
+//
 // This file is part of the ArmaNpy library.
 // It is provided without any warranty of fitness
 // for any purpose. You can redistribute this file
@@ -30,7 +30,7 @@
     } catch( char * str ) {
         PyErr_SetString( PyExc_IndexError, str );
         SWIG_fail;
-    } 
+    }
 }
 
 /* Parse the header file to generate wrappers */
@@ -56,14 +56,13 @@
 %template(MatTestComplexFloat)  CxMatTestClass< arma::Mat< std::complex< float > > >;
 
 %template(ColTestDouble) RowColTestClass< arma::Col<double> >;
-%template(ColTestFloat)  RowColTestClass< arma::Col<float>  >;
-%template(ColTestInt)    RowColTestClass< arma::Col<int>  >;
-%template(ColTestUWord)  RowColTestClass< arma::Col<arma::uword>  >;
+%template(ColTestFloat)  RowColTestClass< arma::Col<float> >;
+%template(ColTestInt)    RowColTestClass< arma::Col<int> >;
+%template(ColTestUWord)  RowColTestClass< arma::Col<arma::uword> >;
 
 %template(RowTestDouble) RowColTestClass< arma::Row<double> >;
-%template(RowTestFloat)  RowColTestClass< arma::Row<float>  >;
-%template(RowTestInt)    RowColTestClass< arma::Row<int>  >;
-%template(RowTestUWord)  RowColTestClass< arma::Row<arma::uword>  >;
-
+%template(RowTestFloat)  RowColTestClass< arma::Row<float> >;
+%template(RowTestInt)    RowColTestClass< arma::Row<int> >;
+%template(RowTestUWord)  RowColTestClass< arma::Row<arma::uword> >;
 
 

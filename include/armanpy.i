@@ -19,78 +19,76 @@
 %fragment( "armanpy_typemaps", "header", fragment="NumPy_Fragments" )
 {
 
-	template< typename ArmaT >
-	bool armanpy_basic_typecheck( PyObject* input, bool raise, bool check_own_data = false )
+    template< typename ArmaT >
+    bool armanpy_basic_typecheck( PyObject* input, bool raise, bool check_own_data = false )
     {
-		if( armanpy_allow_conversion_flag ) {
-			PyErr_SetString( PyExc_TypeError, "Conversion not supported anymore. Please wrap your data using numpy.array( ... ) and call armanpy_conversion( false )." );
-			return false;
-		} else {
-			const int req_type = ArmaTypeInfo<ArmaT>::type;
-			if( ! is_array( input ) ) {
-				const char * required = typecode_string( req_type );
-				const char * actual   = pytype_string( input );
-				if( raise ) PyErr_Format( PyExc_TypeError, "Array of type '%s' required. A '%s' was given.", required, actual );
-				return false;
-			}
-			PyArrayObject* array = (PyArrayObject*)input;
-			if( ! PyArray_EquivTypenums( array_type( array ), req_type ) ) {
-				const char * required = typecode_string( req_type );
-				const char * actual   = typecode_string( array_type(array) );
-				if( raise ) PyErr_Format( PyExc_TypeError, "Array of type '%s' required. Array of type '%s' was given.", required, actual );
-				return false;				
-			}
-			if( ! require_dimensions( array, ArmaTypeInfo<ArmaT>::numdim ) ) {
-				if( raise ) PyErr_Format( PyExc_TypeError, "Array with %i dimension required. A %i-dimensional array was given.", ArmaTypeInfo<ArmaT>::numdim, array_numdims( array ) );
-				return false;
-			}
-			if( ArmaTypeInfo<ArmaT>::numdim < 2 ) {
-				if( ! ( array_is_fortran(array) || array_is_contiguous(array) ) ) {
-					if( raise ) PyErr_SetString( PyExc_TypeError, "Array must be contiguous. A non-contiguous array was given." );
-					return false;
-				}
-			} else {
-				if( ! array_is_fortran(array) ) {
-					if( raise ) PyErr_SetString( PyExc_TypeError, "Array must be FORTRAN contiguous. A non-FORTRAN-contiguous array was given." );
-					return false;
-				}
-			}
-			if( check_own_data && ( ! ( PyArray_FLAGS(array) & NPY_OWNDATA ) ) ) {
-				if( raise ) PyErr_SetString( PyExc_TypeError, "Array must own its data. Please wrapp your data using numpy.array( ... ).");
-				return false;
-			}
-			return true;
-		}
-	}
+        if( armanpy_allow_conversion_flag ) {
+            PyErr_SetString( PyExc_TypeError, "Conversion not supported anymore. Please wrap your data using numpy.array( ... ) and call armanpy_conversion( false )." );
+            return false;
+        } else {
+            const int req_type = ArmaTypeInfo<ArmaT>::type;
+            if( ! is_array( input ) ) {
+                const char * required = typecode_string( req_type );
+                const char * actual   = pytype_string( input );
+                if( raise ) PyErr_Format( PyExc_TypeError, "Array of type '%s' required. A '%s' was given.", required, actual );
+                return false;
+            }
+            PyArrayObject* array = (PyArrayObject*)input;
+            if( ! PyArray_EquivTypenums( array_type( array ), req_type ) ) {
+                const char * required = typecode_string( req_type );
+                const char * actual   = typecode_string( array_type(array) );
+                if( raise ) PyErr_Format( PyExc_TypeError, "Array of type '%s' required. Array of type '%s' was given.", required, actual );
+                return false;                
+            }
+            if( ! require_dimensions( array, ArmaTypeInfo<ArmaT>::numdim ) ) {
+                if( raise ) PyErr_Format( PyExc_TypeError, "Array with %i dimension required. A %i-dimensional array was given.", ArmaTypeInfo<ArmaT>::numdim, array_numdims( array ) );
+                return false;
+            }
+            if( ArmaTypeInfo<ArmaT>::numdim < 2 ) {
+                if( ! ( array_is_fortran(array) || array_is_contiguous(array) ) ) {
+                    if( raise ) PyErr_SetString( PyExc_TypeError, "Array must be contiguous. A non-contiguous array was given." );
+                    return false;
+                }
+            } else {
+                if( ! array_is_fortran(array) ) {
+                    if( raise ) PyErr_SetString( PyExc_TypeError, "Array must be FORTRAN contiguous. A non-FORTRAN-contiguous array was given." );
+                    return false;
+                }
+            }
+            if( check_own_data && ( ! ( PyArray_FLAGS(array) & NPY_OWNDATA ) ) ) {
+                if( raise ) PyErr_SetString( PyExc_TypeError, "Array must own its data. Please wrapp your data using numpy.array( ... ).");
+                return false;
+            }
+            return true;
+        }
+    }
 
 }
 
 #define ARMANPY_SHARED_PTR
 
 %header %{
-	#include <algorithm>
-	#include <armadillo>
-	#include <iostream>
-	#include <stdio.h>
-	#include <string.h>
-	#include <complex>
+    #include <algorithm>
+    #include <armadillo>
+    #include <iostream>
+    #include <stdio.h>
+    #include <string.h>
+    #include <complex>
 %}
 
 #if defined( ARMANPY_SHARED_PTR )
-	%header %{
-		#include <boost/shared_ptr.hpp>
-		#define ARMANPY_SHARED_PTR
-	%}
+    %header %{
+        #include <boost/shared_ptr.hpp>
+        #define ARMANPY_SHARED_PTR
+    %}
 #else
-	%header %{
-		#undef ARMANPY_SHARED_PTR
-	%}
+    %header %{
+        #undef ARMANPY_SHARED_PTR
+    %}
 #endif
 
 %header %{
-	#include "armanpy.hpp"
-	using namespace arma;
-	#undef Row
+    #include "armanpy.hpp"
 %}
 
 %init %{
@@ -103,8 +101,8 @@ INIT_ARMA_CAPSULE( arma::Col< float >       )
 INIT_ARMA_CAPSULE( arma::Col< int >         )
 INIT_ARMA_CAPSULE( arma::Col< unsigned >    )
 #if defined(ARMA_64BIT_WORD)
-	INIT_ARMA_CAPSULE( arma::Col< arma::sword > )
-	INIT_ARMA_CAPSULE( arma::Col< arma::uword > )
+    INIT_ARMA_CAPSULE( arma::Col< arma::sword > )
+    INIT_ARMA_CAPSULE( arma::Col< arma::uword > )
 #endif
 INIT_ARMA_CAPSULE( arma::Col< std::complex< double > > )
 INIT_ARMA_CAPSULE( arma::Col< std::complex< float > >  )
@@ -115,8 +113,8 @@ INIT_ARMA_CAPSULE( arma::Row< float >       )
 INIT_ARMA_CAPSULE( arma::Row< int >         )
 INIT_ARMA_CAPSULE( arma::Row< unsigned >    )
 #if defined(ARMA_64BIT_WORD)
-	INIT_ARMA_CAPSULE( arma::Row< arma::sword > )
-	INIT_ARMA_CAPSULE( arma::Row< arma::uword > )
+    INIT_ARMA_CAPSULE( arma::Row< arma::sword > )
+    INIT_ARMA_CAPSULE( arma::Row< arma::uword > )
 #endif
 INIT_ARMA_CAPSULE( arma::Row< std::complex< double > > )
 INIT_ARMA_CAPSULE( arma::Row< std::complex< float > >  )
@@ -127,8 +125,8 @@ INIT_ARMA_CAPSULE( arma::Mat< float >       )
 INIT_ARMA_CAPSULE( arma::Mat< int >         )
 INIT_ARMA_CAPSULE( arma::Mat< unsigned >    )
 #if defined(ARMA_64BIT_WORD)
-	INIT_ARMA_CAPSULE( arma::Mat< arma::sword > )
-	INIT_ARMA_CAPSULE( arma::Mat< arma::uword > )
+    INIT_ARMA_CAPSULE( arma::Mat< arma::sword > )
+    INIT_ARMA_CAPSULE( arma::Mat< arma::uword > )
 #endif
 INIT_ARMA_CAPSULE( arma::Mat< std::complex< double > > )
 INIT_ARMA_CAPSULE( arma::Mat< std::complex< float > >  )
@@ -138,8 +136,8 @@ INIT_ARMA_CAPSULE( arma::Cube< float >       )
 INIT_ARMA_CAPSULE( arma::Cube< int >         )
 INIT_ARMA_CAPSULE( arma::Cube< unsigned >    )
 #if defined(ARMA_64BIT_WORD)
-	INIT_ARMA_CAPSULE( arma::Cube< arma::sword > )
-	INIT_ARMA_CAPSULE( arma::Cube< arma::uword > )
+    INIT_ARMA_CAPSULE( arma::Cube< arma::sword > )
+    INIT_ARMA_CAPSULE( arma::Cube< arma::uword > )
 #endif
 INIT_ARMA_CAPSULE( arma::Cube< std::complex< double > > )
 INIT_ARMA_CAPSULE( arma::Cube< std::complex< float > >  )
@@ -153,8 +151,8 @@ INIT_ARMA_BSPTR_CAPSULE( arma::Col< float >       )
 INIT_ARMA_BSPTR_CAPSULE( arma::Col< int >         )
 INIT_ARMA_BSPTR_CAPSULE( arma::Col< unsigned >    )
 #if defined(ARMA_64BIT_WORD)
-	INIT_ARMA_BSPTR_CAPSULE( arma::Col< arma::sword > )
-	INIT_ARMA_BSPTR_CAPSULE( arma::Col< arma::uword > )
+    INIT_ARMA_BSPTR_CAPSULE( arma::Col< arma::sword > )
+    INIT_ARMA_BSPTR_CAPSULE( arma::Col< arma::uword > )
 #endif
 INIT_ARMA_BSPTR_CAPSULE( arma::Col< std::complex< double > > )
 INIT_ARMA_BSPTR_CAPSULE( arma::Col< std::complex< float > >  )
@@ -165,8 +163,8 @@ INIT_ARMA_BSPTR_CAPSULE( arma::Row< float >       )
 INIT_ARMA_BSPTR_CAPSULE( arma::Row< int >         )
 INIT_ARMA_BSPTR_CAPSULE( arma::Row< unsigned >    )
 #if defined(ARMA_64BIT_WORD)
-	INIT_ARMA_BSPTR_CAPSULE( arma::Row< arma::sword > )
-	INIT_ARMA_BSPTR_CAPSULE( arma::Row< arma::uword > )
+    INIT_ARMA_BSPTR_CAPSULE( arma::Row< arma::sword > )
+    INIT_ARMA_BSPTR_CAPSULE( arma::Row< arma::uword > )
 #endif
 INIT_ARMA_BSPTR_CAPSULE( arma::Row< std::complex< double > > )
 INIT_ARMA_BSPTR_CAPSULE( arma::Row< std::complex< float > >  )
@@ -177,8 +175,8 @@ INIT_ARMA_BSPTR_CAPSULE( arma::Mat< float >       )
 INIT_ARMA_BSPTR_CAPSULE( arma::Mat< int >         )
 INIT_ARMA_BSPTR_CAPSULE( arma::Mat< unsigned >    )
 #if defined(ARMA_64BIT_WORD)
-	INIT_ARMA_BSPTR_CAPSULE( arma::Mat< arma::sword > )
-	INIT_ARMA_BSPTR_CAPSULE( arma::Mat< arma::uword > )
+    INIT_ARMA_BSPTR_CAPSULE( arma::Mat< arma::sword > )
+    INIT_ARMA_BSPTR_CAPSULE( arma::Mat< arma::uword > )
 #endif
 INIT_ARMA_BSPTR_CAPSULE( arma::Mat< std::complex< double > > )
 INIT_ARMA_BSPTR_CAPSULE( arma::Mat< std::complex< float > >  )
@@ -188,8 +186,8 @@ INIT_ARMA_BSPTR_CAPSULE( arma::Cube< float >       )
 INIT_ARMA_BSPTR_CAPSULE( arma::Cube< int >         )
 INIT_ARMA_BSPTR_CAPSULE( arma::Cube< unsigned >    )
 #if defined(ARMA_64BIT_WORD)
-	INIT_ARMA_BSPTR_CAPSULE( arma::Cube< arma::sword > )
-	INIT_ARMA_BSPTR_CAPSULE( arma::Cube< arma::uword > )
+    INIT_ARMA_BSPTR_CAPSULE( arma::Cube< arma::sword > )
+    INIT_ARMA_BSPTR_CAPSULE( arma::Cube< arma::uword > )
 #endif
 INIT_ARMA_BSPTR_CAPSULE( arma::Cube< std::complex< double > > )
 INIT_ARMA_BSPTR_CAPSULE( arma::Cube< std::complex< float > >  )
