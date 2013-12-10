@@ -1,5 +1,5 @@
 // Copyright (C) 2012 thomas.natschlaeger@gmail.com
-// 
+//
 // This file is part of the ArmaNpy library.
 // It is provided without any warranty of fitness
 // for any purpose. You can redistribute this file
@@ -29,7 +29,7 @@
             return true;
         }
     }
-    
+
     template< typename MatT >
     PyArrayObject* armanpy_to_cube_with_conversion( PyObject* input , int nd )
     {
@@ -51,7 +51,7 @@
                         "Array must be FORTRAN contiguous."\
                         "  A non-FORTRAN-contiguous array was given");
                     return NULL;
-               } 
+               }
             return array;
         }
     }
@@ -74,7 +74,7 @@
 
                 // 2. We should "implant" the m->mem into ary->data
                 //    Here we use the trick from http://blog.enthought.com/?p=62
-                ary->flags = ary->flags & ~( NPY_OWNDATA ); 
+                ary->flags = ary->flags & ~( NPY_OWNDATA );
                 ArmaCapsule< MatT > *capsule;
                 capsule      = PyObject_New( ArmaCapsule< MatT >, &ArmaCapsulePyType<MatT>::object );
                 capsule->mat = m;
@@ -92,7 +92,7 @@
             delete m;
         }
     }
-    
+
     template< typename MatT >
     bool armanpy_numpy_as_cube_with_shared_memory( PyObject* input, MatT **m )
     {
@@ -113,7 +113,7 @@
         *m = new MatT( (typename MatT::elem_type *)array_data(array), r, c, s, false, false );
         return true;
     }
-    
+
     template< typename MatT >
     PyObject* armanpy_cube_copy_to_numpy( MatT * m )
     {
@@ -126,7 +126,7 @@
         std::copy( m->begin(), m->end(), reinterpret_cast< typename MatT::elem_type *>(array_data(array)) );
         return array;
      }
-     
+
 #if defined(ARMANPY_SHARED_PTR)
 
     template< typename MatT >
@@ -149,10 +149,10 @@
 
         // 2. We should "implant" the m->mem into ary->data
         //    Here we use the trick from http://blog.enthought.com/?p=62
-        ary->flags = ary->flags & ~( NPY_OWNDATA ); 
+        ary->flags = ary->flags & ~( NPY_OWNDATA );
         ArmaBsptrCapsule< MatT > *capsule;
         capsule      = PyObject_New( ArmaBsptrCapsule< MatT >, &ArmaBsptrCapsulePyType<MatT>::object );
-        capsule->mat = new boost::shared_ptr< MatT >();        
+        capsule->mat = new boost::shared_ptr< MatT >();
         ary->data = (char *)( m->mem );
         (*(capsule->mat)) = m;
         PyArray_BASE(ary) = (PyObject *)capsule;
@@ -160,54 +160,108 @@
     }
 
 #endif
-    
+
 }
 
 //////////////////////////////////////////////////////////////////////////
-// INPUT Arguments
+// BY VALUE ARGs for 3D arrays
+//////////////////////////////////////////////////////////////////////////
+
+%define %armanpy_cube_byvalue_typemaps( ARMA_MAT_TYPE )
+
+    %typemap( typecheck, precedence=SWIG_TYPECHECK_FLOAT_ARRAY )
+        ( const ARMA_MAT_TYPE ) ( PyArrayObject* array=NULL ),
+        (       ARMA_MAT_TYPE ) ( PyArrayObject* array=NULL )
+    {
+        $1 = armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, false );
+    }
+
+    %typemap( in, fragment="armanpy_cube_typemaps" )
+        ( const ARMA_MAT_TYPE ) ( PyArrayObject* array=NULL ),
+        (       ARMA_MAT_TYPE ) ( PyArrayObject* array=NULL )
+    {
+        if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true ) ) SWIG_fail;
+        array = obj_to_array_no_conversion( $input, ArmaTypeInfo<ARMA_MAT_TYPE>::type );
+        if( !array ) SWIG_fail;
+        $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
+                                array->dimensions[0], array->dimensions[1], array->dimensions[2], false );
+    }
+
+    %typemap( argout )
+        ( const ARMA_MAT_TYPE ),
+        (       ARMA_MAT_TYPE )
+    {
+    }
+
+    %typemap( freearg )
+        ( const ARMA_MAT_TYPE ),
+        (       ARMA_MAT_TYPE )
+    {
+    }
+
+%enddef
+
+%armanpy_cube_byvalue_typemaps( arma::Cube< double > )
+%armanpy_cube_byvalue_typemaps( arma::Cube< float >  )
+%armanpy_cube_byvalue_typemaps( arma::Cube< int > )
+%armanpy_cube_byvalue_typemaps( arma::Cube< unsigned >  )
+%armanpy_cube_byvalue_typemaps( arma::Cube< arma::sword >  )
+%armanpy_cube_byvalue_typemaps( arma::Cube< arma::uword >  )
+%armanpy_cube_byvalue_typemaps( arma::Cube< arma::cx_double >  )
+%armanpy_cube_byvalue_typemaps( arma::Cube< arma::cx_float >  )
+%armanpy_cube_byvalue_typemaps( arma::Cube< std::complex< double > >  )
+%armanpy_cube_byvalue_typemaps( arma::Cube< std::complex< float > >  )
+%armanpy_cube_byvalue_typemaps( arma::cube )
+%armanpy_cube_byvalue_typemaps( arma::fcube )
+%armanpy_cube_byvalue_typemaps( arma::icube )
+%armanpy_cube_byvalue_typemaps( arma::ucube )
+%armanpy_cube_byvalue_typemaps( arma::uchar_cube )
+%armanpy_cube_byvalue_typemaps( arma::u32_cube )
+%armanpy_cube_byvalue_typemaps( arma::s32_cube )
+%armanpy_cube_byvalue_typemaps( arma::cx_cube )
+%armanpy_cube_byvalue_typemaps( arma::cx_fcube )
+
+//////////////////////////////////////////////////////////////////////////
+// CONST REF/PTR ARGs for 3D arrays
 //////////////////////////////////////////////////////////////////////////
 
 %define %armanpy_cube_const_ref_typemaps( ARMA_MAT_TYPE )
 
     %typemap( typecheck, precedence=SWIG_TYPECHECK_FLOAT_ARRAY )
         ( const ARMA_MAT_TYPE & ) ( PyArrayObject* array=NULL ),
-        ( const ARMA_MAT_TYPE   ) ( PyArrayObject* array=NULL ),
-        (       ARMA_MAT_TYPE   ) ( PyArrayObject* array=NULL )
+        ( const ARMA_MAT_TYPE * ) ( PyArrayObject* array=NULL )
     {
         $1 = armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, false );
     }
-    
+
     %typemap( in, fragment="armanpy_cube_typemaps" )
         ( const ARMA_MAT_TYPE & ) ( PyArrayObject* array=NULL ),
-        ( const ARMA_MAT_TYPE   ) ( PyArrayObject* array=NULL ),
-        (       ARMA_MAT_TYPE   ) ( PyArrayObject* array=NULL )
+        ( const ARMA_MAT_TYPE * ) ( PyArrayObject* array=NULL )
     {
         if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true ) ) SWIG_fail;
         array = obj_to_array_no_conversion( $input, ArmaTypeInfo<ARMA_MAT_TYPE>::type );
         if( !array ) SWIG_fail;
-        $1 = new ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array), 
+        $1 = new ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
                                 array->dimensions[0], array->dimensions[1], array->dimensions[2], false );
     }
-    
-    %typemap( argout ) 
+
+    %typemap( argout )
         ( const ARMA_MAT_TYPE & ),
-        ( const ARMA_MAT_TYPE   ),
-        (       ARMA_MAT_TYPE   )
+        ( const ARMA_MAT_TYPE * )
     {
     // NOOP
     }
-    
+
     %typemap( freearg )
         ( const ARMA_MAT_TYPE & ),
-        ( const ARMA_MAT_TYPE   ),
-        (       ARMA_MAT_TYPE   )
+        ( const ARMA_MAT_TYPE * )
     {
         if( array$argnum ) {
             delete $1;
         }
     }
 
-%enddef 
+%enddef
 
 %armanpy_cube_const_ref_typemaps( arma::Cube< double > )
 %armanpy_cube_const_ref_typemaps( arma::Cube< float >  )
@@ -238,11 +292,11 @@
 %define %armanpy_cube_ref_typemaps( ARMA_MAT_TYPE )
 
     %typemap( typecheck, precedence=SWIG_TYPECHECK_FLOAT_ARRAY )
-        ( ARMA_MAT_TYPE &)    
+        ( ARMA_MAT_TYPE &)
     {
         $1 = armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, false, true );
     }
-    
+
     %typemap( in, fragment="armanpy_cube_typemaps" )
         ( ARMA_MAT_TYPE &)
     {
@@ -255,14 +309,14 @@
     {
         armanpy_cube_as_numpy_with_shared_memory( $1, $input );
     }
-    
+
     %typemap( freearg )
         ( ARMA_MAT_TYPE & )
     {
        // NOOP
     }
 
-%enddef 
+%enddef
 
 %armanpy_cube_ref_typemaps( arma::Cube< double > )
 %armanpy_cube_ref_typemaps( arma::Cube< float >  )
@@ -289,14 +343,14 @@
 //////////////////////////////////////////////////////////////////////////
 
 %define %armanpy_cube_return_by_value_typemaps( ARMA_MAT_TYPE )
-    %typemap( out ) 
+    %typemap( out )
         ( ARMA_MAT_TYPE )
     {
       PyObject* array = armanpy_cube_copy_to_numpy< ARMA_MAT_TYPE >( &$1 );
       if ( !array ) SWIG_fail;
       $result = SWIG_Python_AppendOutput($result, array);
     }
-%enddef 
+%enddef
 
 %armanpy_cube_return_by_value_typemaps( arma::Cube< double > )
 %armanpy_cube_return_by_value_typemaps( arma::Cube< float >  )
@@ -319,7 +373,7 @@
 %armanpy_cube_return_by_value_typemaps( arma::cx_fcube )
 
 %define %armanpy_cube_return_by_reference_typemaps( ARMA_MAT_TYPE )
-    %typemap( out ) 
+    %typemap( out )
         ( const ARMA_MAT_TYPE & ),
         (       ARMA_MAT_TYPE & )
     {
@@ -327,7 +381,7 @@
       if ( !array ) SWIG_fail;
       $result = SWIG_Python_AppendOutput($result, array);
     }
-%enddef 
+%enddef
 
 %armanpy_cube_return_by_reference_typemaps( arma::Cube< double > )
 %armanpy_cube_return_by_reference_typemaps( arma::Cube< float >  )
@@ -357,14 +411,14 @@
 #if defined(ARMANPY_SHARED_PTR)
 
 %define %armanpy_cube_return_by_bsptr_typemaps( ARMA_MAT_TYPE )
-    %typemap( out , fragment="armanpy_cube_typemaps" ) 
+    %typemap( out , fragment="armanpy_cube_typemaps" )
         ( boost::shared_ptr< ARMA_MAT_TYPE > )
     {
       PyObject* array = armanpy_cube_bsptr_as_numpy_with_shared_memory< ARMA_MAT_TYPE >( $1 );
       if ( !array ) { SWIG_fail; }
       $result = SWIG_Python_AppendOutput($result, array);
     }
-%enddef 
+%enddef
 
 %armanpy_cube_return_by_bsptr_typemaps( arma::Cube< double > )
 %armanpy_cube_return_by_bsptr_typemaps( arma::Cube< float >  )
