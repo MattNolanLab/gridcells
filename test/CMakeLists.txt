@@ -16,11 +16,15 @@ project( armanpytest )
 SET( CMAKE_VERBOSE_MAKEFILE ON )
 
 ### Armadillo
+
 find_path( ARMADILLO_INCLUDE_DIR
 		NAMES armadillo
-		PATHS ../../../dependencies/armadillo-3.4.3 ../../../dependencies/armadillo
-		PATH_SUFFIXES "include"
+        PATHS ../../../MLPP/git/dependencies/armadillo-3.4.3/include
+		      ../../../MLPP/git/dependencies/armadillo/include
+			  ../../../MLPP/code/dependencies/armadillo-3.4.3/include
+			  ../../../MLPP/code/dependencies/armadillo/include
 )
+
 message( STATUS "Armadillo" )
 message( STATUS "    IncDirs: ${ARMADILLO_INCLUDE_DIR}" )
 
@@ -109,3 +113,6 @@ set_source_files_properties( test.i PROPERTIES SWIG_FLAGS "-includeall;-ignoremi
 swig_add_module( armanpytest python test.i )
 swig_link_libraries( armanpytest ${TEST_LIBRARY_NAME} ${PYTHON_LIBRARIES} )
 set( SWIG_MODULE_armanpytest_EXTRA_DEPS armanpy.i numpy.i test.cpp test.hpp )
+
+enable_testing()
+add_test( NAME ArmaNpyTest COMMAND ${PYTHON_EXECUTABLE} armanpy_tests.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} )
