@@ -61,5 +61,4 @@ of the License or (at your option) any later version.
 TODO
 ----
 
-* allow for const arma::Mat< ... > * (should be the same as const arma::Mat< ... > &)
 * allow for arma::Mat< ... > *( should be the same as arma::Mat< ... > &)
