@@ -18,8 +18,10 @@ SET( CMAKE_VERBOSE_MAKEFILE ON )
 ### Armadillo
 find_path( ARMADILLO_INCLUDE_DIR
 		NAMES armadillo
-		PATHS ../../../dependencies/armadillo-3.4.3 ../../../dependencies/armadillo
-		PATH_SUFFIXES "include"
+        PATHS ../../../MLPP/git/dependencies/armadillo-3.4.3/include
+		      ../../../MLPP/git/dependencies/armadillo/include
+			  ../../../MLPP/code/dependencies/armadillo-3.4.3/include
+			  ../../../MLPP/code/dependencies/armadillo/include
 )
 message( STATUS "Armadillo" )
 message( STATUS "    IncDirs: ${ARMADILLO_INCLUDE_DIR}" )
@@ -105,5 +107,6 @@ SET( CMAKE_SWIG_OUTDIR "${PROJECT_BINARY_DIR}/bin" )
 set_source_files_properties( example.i PROPERTIES CPLUSPLUS ON)
 set_source_files_properties( example.i PROPERTIES SWIG_FLAGS "-includeall;-ignoremissing" ) # ;-debug-tmused;-debug-typedef;-debug-typemap" )
 swig_add_module( armanpyexample python example.i )
+message( STATUS "${PYTHON_LIBRARIES}" )
 swig_link_libraries( armanpyexample armanpyexample ${PYTHON_LIBRARIES} )
 set( SWIG_MODULE_armanpytest_EXTRA_DEPS armanpy.i numpy.i example.cpp example.hpp )

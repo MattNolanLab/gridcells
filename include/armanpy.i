@@ -16,12 +16,25 @@
 // numpy.i is from https://github.com/numpy/numpy/tree/master/doc/swig
 %include "numpy.i"
 
-%fragment( "armanpy_typemaps", "header", fragment="NumPy_Fragments" )
+%fragment("ArmaNumPy_Backward_Compatibility", "header")
+{
+%#if NPY_API_VERSION < 0x00000007
+%#define NPY_ARRAY_OWNDATA NPY_ARRAY_OWNDATA
+%#define array_set_base_object(arr, obj) ( PyArray_BASE(arr) = (PyObject *)obj )
+%#define array_set_data( arr, mem )      ( ((PyArrayObject*)arr)->data = mem )
+%#else
+%#define array_set_base_object(arr, obj) PyArray_SetBaseObject(arr, (PyObject *)obj )
+%#define array_set_data( arr, mem )      ( ((PyArrayObject_fields*)arr)->data = (char*)mem )
+%#endif
+}
+
+%fragment( "armanpy_typemaps", "header", fragment="NumPy_Fragments", fragment="ArmaNumPy_Backward_Compatibility" )
 {
 
     template< typename ArmaT >
     bool armanpy_basic_typecheck( PyObject* input, bool raise, bool check_own_data = false )
     {
+        /***/
         if( armanpy_allow_conversion_flag ) {
             PyErr_SetString( PyExc_TypeError, "Conversion not supported anymore. Please wrap your data using numpy.array( ... ) and call armanpy_conversion( false )." );
             return false;
@@ -55,9 +68,20 @@
                     return false;
                 }
             }
-            if( check_own_data && ( ! ( PyArray_FLAGS(array) & NPY_OWNDATA ) ) ) {
-                if( raise ) PyErr_SetString( PyExc_TypeError, "Array must own its data. Please wrapp your data using numpy.array( ... ).");
+            if( check_own_data && ( ! ( PyArray_FLAGS(array) & NPY_ARRAY_OWNDATA ) ) ) {
+                if( raise ) PyErr_SetString( PyExc_TypeError, "Array must own its data. Please wrap your data using numpy.array( ... ).");
                 return false;
+            }
+            if( sizeof(npy_intp) > sizeof(arma::uword) ) {
+                npy_intp  ndim = array_numdims(array);
+                npy_intp *dims = array_dimensions(array);
+                npy_intp max_arma_uword = (npy_intp)(2) ^ ( 8 * sizeof(arma::uword) ) - 1;
+                for( npy_intp i=0; i < ndim; i++ ) {
+                    if( dims[i] > max_arma_uword ) {
+                        if( raise ) PyErr_Format( PyExc_TypeError, "Dimension %i of array to large (%i). Only %i elements per dimension supported.", i, dims[i], max_arma_uword );
+                        return false;
+                    };
+                }
             }
             return true;
         }

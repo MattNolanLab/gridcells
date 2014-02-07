@@ -17,9 +17,10 @@
     template< typename VecT >
     bool armanpy_numpy_as_vec_with_shared_memory( PyObject* input, VecT **m )
     {
-        PyArrayObject* array = obj_to_array_no_conversion( input, NumpyType< typename VecT::elem_type >::val );
+        typedef typename VecT::elem_type eT;
+        PyArrayObject* array = obj_to_array_no_conversion( input, NumpyType<eT>::val );
         if ( !array || !require_dimensions(array, 1) ) return false;
-        if( ! ( PyArray_FLAGS(array) & NPY_OWNDATA ) ) {
+        if( ! ( PyArray_FLAGS(array) & NPY_ARRAY_OWNDATA ) ) {
             PyErr_SetString(PyExc_TypeError, "Array must own its data.");
             return false;
         }
@@ -28,8 +29,8 @@
                 "Array must be FORTRAN contiguous.  A non-FORTRAN-contiguous array was given");
             return false;
         }
-        unsigned p = array->dimensions[0];
-        *m = new VecT( (typename VecT::elem_type *)array_data(array), p, false, false );
+        arma::uword p = arma::uword( array_dimensions(array)[0] );
+        *m = new VecT( (eT *)array_data(array), p, false, false );
         return true;
     }
 
@@ -38,26 +39,27 @@
     template< typename VecT >
     void armanpy_vec_as_numpy_with_shared_memory( VecT *m, PyObject* input )
     {
+        typedef typename VecT::elem_type eT;
         PyArrayObject* ary= (PyArrayObject*)input;
-        ary->dimensions[0] = m->n_elem;
-        ary->strides[0]    = sizeof(  typename VecT::elem_type  );
-        if(  m->mem != ( typename VecT::elem_type *)array_data(ary) ) {
+        array_dimensions(ary)[0] = m->n_elem;
+        array_strides(ary)[0]    = sizeof(eT);
+        if(  m->mem != ( eT *)array_data(ary) ) {
             // if( ! m->uses_local_mem() ) {
-                // 1. We do not need the memory at ary->data anymore
-                //    This can be simply removed by PyArray_free( ary->data );
-                PyArray_free( ary->data );
+                // 1. We do not need the memory at array_data(ary) anymore
+                //    This can be simply removed by PyArray_free( array_data(ary) );
+                PyDataMem_FREE( array_data(ary) );
 
-                // 2. We should "implant" the m->mem into ary->data
+                // 2. We should "implant" the m->mem into array_data(ary)
                 //    Here we use the trick from http://blog.enthought.com/?p=62
-                ary->flags = ary->flags & ~( NPY_OWNDATA );
+                PyArray_CLEARFLAGS( ary, NPY_ARRAY_OWNDATA );
                 ArmaCapsule< VecT > *capsule;
                 capsule      = PyObject_New( ArmaCapsule< VecT >, &ArmaCapsulePyType<VecT>::object );
                 capsule->mat = m;
-                ary->data = (char *)capsule->mat->mem;
-                PyArray_BASE(ary) = (PyObject *)capsule;
+                array_set_data( ary, capsule->mat->mem );
+                array_set_base_object( ary, capsule );
             //} else {
                 // Here we just copy a few bytes, as local memory of arma is typically small
-            //    memcpy ( ary->data, m->mem, sizeof( typename VecT::elem_type ) * m->n_elem );
+            //    memcpy ( array_data(ary), m->mem, sizeof( eT ) * m->n_elem );
             //    delete m;
             //}
         } else {
@@ -71,13 +73,14 @@
     template< typename VecT >
     PyObject* armanpy_vec_copy_to_numpy( VecT * m )
     {
+        typedef typename VecT::elem_type eT;
         npy_intp dims[1] = { m->n_elem };
         PyObject* array = PyArray_EMPTY( ArmaTypeInfo<VecT>::numdim, dims, ArmaTypeInfo<VecT>::type, true);
         if ( !array || !array_is_contiguous( array ) ) {
             PyErr_SetString( PyExc_TypeError, "Creation of 1-dimensional return array failed" );
             return NULL;
         }
-        std::copy( m->begin(), m->end(), reinterpret_cast< typename VecT::elem_type *>(array_data(array)) );
+        std::copy( m->begin(), m->end(), reinterpret_cast< eT *>(array_data(array)) );
         return array;
      }
 
@@ -85,27 +88,28 @@
 
     template< typename VecT >
     PyObject* armanpy_vec_bsptr_as_numpy_with_shared_memory( boost::shared_ptr< VecT > m )
-    {
+    { 
+        typedef typename VecT::elem_type eT;
         npy_intp dims[1] = { 1 };
-        PyArrayObject* ary = (PyArrayObject*)PyArray_EMPTY(1, dims, NumpyType< typename VecT::elem_type >::val, true);
+        PyArrayObject* ary = (PyArrayObject*)PyArray_EMPTY(1, dims, NumpyType< eT >::val, true);
         if ( !ary || !array_is_contiguous(ary) ) { return NULL; }
 
-        ary->dimensions[0] = m->n_elem;
-        ary->strides[0]    = sizeof(  typename VecT::elem_type  );
+        array_dimensions(ary)[0] = m->n_elem;
+        array_strides(ary)[0]    = sizeof(  eT  );
 
-        // 1. We do not need the memory at ary->data anymore
-        //    This can be simply removed by PyArray_free( ary->data );
-        PyArray_free( ary->data );
+        // 1. We do not need the memory at array_data(ary) anymore
+        //    This can be simply removed by PyArray_free( array_data(ary) );
+        PyDataMem_FREE( array_data(ary) );
 
-        // 2. We should "implant" the m->mem into ary->data
+        // 2. We should "implant" the m->mem into array_data(ary)
         //    Here we use the trick from http://blog.enthought.com/?p=62
-        ary->flags = ary->flags & ~( NPY_OWNDATA );
+        PyArray_CLEARFLAGS( ary, NPY_ARRAY_OWNDATA );
         ArmaBsptrCapsule< VecT > *capsule;
         capsule      = PyObject_New( ArmaBsptrCapsule< VecT >, &ArmaBsptrCapsulePyType<VecT>::object );
         capsule->mat = new boost::shared_ptr< VecT >();
-        ary->data = (char *)( m->mem );
+        array_set_data( ary, m->mem );
         (*(capsule->mat)) = m;
-        PyArray_BASE(ary) = (PyObject *)capsule;
+        array_set_base_object( ary, capsule );
         return (PyObject*)ary;
     }
 
@@ -132,7 +136,7 @@
         if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true ) ) SWIG_fail;
         array = obj_to_array_no_conversion( $input, ArmaTypeInfo<ARMA_MAT_TYPE>::type );
         if( !array ) SWIG_fail;
-        $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array), array->dimensions[0], false );
+        $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array), arma::uword( array_dimensions(array)[0] ), false );
     }
 
     %typemap( argout )
@@ -219,7 +223,7 @@
         array = obj_to_array_no_conversion( $input, ArmaTypeInfo<ARMA_MAT_TYPE>::type );
         if( !array ) SWIG_fail;
         $1 = new ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
-                                array->dimensions[0], false );
+                                arma::uword( array_dimensions(array)[0] ), false );
     }
 
     %typemap( argout )

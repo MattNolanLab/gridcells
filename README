@@ -30,11 +30,18 @@ cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DARMADILLO_INCLUDE_DIR=/path/to/your/armadillo/include
 cmake --build . --config Release
 cd ..
-python example.py --verbose
+python example.py
+
+or 
+
+python armanpy_tests.py
+
 
 *Note* : -DCMAKE_BUILD_TYPE=Release is used bcs on Windows a typical Python distribution does not
 come with the debug version of the Python libraries. Hence, the build would fail for the Debug
 configuration.
+
+*Remark* : To use 64bit under Windows add e.g. -G "Visual Studio 11 Win64" to the first cmake command.
 
 Credits
 -------
@@ -45,7 +52,7 @@ https://bitbucket.org/mforbes/swig_cpp_python/src/cd7cef820273?at=default.
 Copyright
 ---------
 
-Copyright (C) 2008-2012 Thomas Natschläger (thomas.natschlaeger@gmail.com)
+Copyright (C) 2012-2014 Thomas Natschläger (thomas.natschlaeger@gmail.com)
 
 License
 -------
@@ -58,7 +65,3 @@ by the Free Software Foundation, either version 3
 of the License or (at your option) any later version.
 (see http://www.opensource.org/licenses for more info)
 
-TODO
-----
-
-* allow for arma::Mat< ... > *( should be the same as arma::Mat< ... > &)

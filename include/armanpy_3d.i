@@ -15,14 +15,15 @@
     template< typename MatT >
     bool armanpy_typecheck_cube_with_conversion( PyObject* input , int nd )
     {
+        typedef typename MatT::elem_type eT;
         PyArrayObject* array=NULL;
         int is_new_object=0;
         if( armanpy_allow_conversion_flag ) {
-            array = obj_to_array_fortran_allow_conversion( input, NumpyType< typename  MatT::elem_type >::val, &is_new_object );
+            array = obj_to_array_fortran_allow_conversion( input, NumpyType<eT>::val, &is_new_object );
             if ( !array || !require_dimensions( array, nd ) ) return false;
             return true;
         } else {
-            array = obj_to_array_no_conversion( input, NumpyType< typename MatT::elem_type >::val );
+            array = obj_to_array_no_conversion( input, NumpyType<eT>::val );
             if( !array )                           return false;
             if( !require_dimensions( array, nd ) ) return false;
             if( !array_is_fortran(array) )         return false;
@@ -33,10 +34,11 @@
     template< typename MatT >
     PyArrayObject* armanpy_to_cube_with_conversion( PyObject* input , int nd )
     {
+        typedef typename MatT::elem_type eT;
         PyArrayObject* array=NULL;
         int is_new_object=0;
         if( armanpy_allow_conversion_flag ) {
-            array = obj_to_array_fortran_allow_conversion( input, NumpyType< typename MatT::elem_type >::val, &is_new_object );
+            array = obj_to_array_fortran_allow_conversion( input, NumpyType<eT>::val, &is_new_object );
             if ( !array || !require_dimensions( array, nd ) ) return NULL;
             if( armanpy_warn_on_conversion_flag && is_new_object ) {
                 PyErr_WarnEx( PyExc_RuntimeWarning,
@@ -44,7 +46,7 @@
             }
             return array;
         } else {
-            array = obj_to_array_no_conversion( input, NumpyType< typename MatT::elem_type >::val );
+            array = obj_to_array_no_conversion( input, NumpyType<eT>::val );
             if ( !array || !require_dimensions( array, nd ) )return NULL;
                 if( !array_is_fortran(array) ) {
                     PyErr_SetString(PyExc_TypeError,
@@ -59,32 +61,28 @@
     template< typename MatT >
     void armanpy_cube_as_numpy_with_shared_memory( MatT *m, PyObject* input )
     {
+        typedef typename MatT::elem_type eT;
         PyArrayObject* ary= (PyArrayObject*)input;
-        ary->dimensions[0] = m->n_rows;
-        ary->dimensions[1] = m->n_cols;
-        ary->dimensions[2] = m->n_slices;
-        ary->strides[0]    = sizeof( typename MatT::elem_type  );
-        ary->strides[1]    = sizeof( typename MatT::elem_type  ) * m->n_rows;
-        ary->strides[2]    = sizeof( typename MatT::elem_type  ) * m->n_rows * m->n_cols;
-        if(  m->mem != ( typename MatT::elem_type *)array_data(ary) ) {
+        array_dimensions(ary)[0] = m->n_rows;
+        array_dimensions(ary)[1] = m->n_cols;
+        array_dimensions(ary)[2] = m->n_slices;
+        array_strides(ary)[0]    = sizeof(eT);
+        array_strides(ary)[1]    = sizeof(eT) * m->n_rows;
+        array_strides(ary)[2]    = sizeof(eT) * m->n_rows * m->n_cols;
+        if(  m->mem != (eT*)array_data(ary) ) {
             // if( ! m->uses_local_mem() ) {
-                // 1. We do not need the memory at ary->data anymore
-                //    This can be simply removed by PyArray_free( ary->data );
-                PyArray_free( ary->data );
+                // 1. We do not need the memory at array_data(ary) anymore
+                //    This can be simply removed by PyArray_free( array_data(ary) );
+                PyDataMem_FREE( array_data(ary) );
 
-                // 2. We should "implant" the m->mem into ary->data
+                // 2. We should "implant" the m->mem into array_data(ary)
                 //    Here we use the trick from http://blog.enthought.com/?p=62
-                ary->flags = ary->flags & ~( NPY_OWNDATA );
+                 PyArray_CLEARFLAGS( ary, NPY_ARRAY_OWNDATA );
                 ArmaCapsule< MatT > *capsule;
                 capsule      = PyObject_New( ArmaCapsule< MatT >, &ArmaCapsulePyType<MatT>::object );
                 capsule->mat = m;
-                ary->data = (char *)capsule->mat->mem;
-                PyArray_BASE(ary) = (PyObject *)capsule;
-            //} else {
-                // Here we just copy a few bytes, as local memory of arma is typically small
-            //    memcpy ( ary->data, m->mem, sizeof( typename MatT::elem_type ) * m->n_elem );
-            //    delete m;
-            //}
+                array_set_data( ary, capsule->mat->mem );
+                array_set_base_object( ary, capsule );
         } else {
             // Memory was not changed at all; i.e. all modifications were done on the original
             // memory brought by the input numpy array. So we just delete the arma array
@@ -96,9 +94,10 @@
     template< typename MatT >
     bool armanpy_numpy_as_cube_with_shared_memory( PyObject* input, MatT **m )
     {
-        PyArrayObject* array = obj_to_array_no_conversion( input, NumpyType< typename MatT::elem_type >::val );
+        typedef typename MatT::elem_type eT;
+        PyArrayObject* array = obj_to_array_no_conversion( input, NumpyType<eT>::val );
         if ( !array || !require_dimensions( array, 3) ) return false;
-        if( ! ( PyArray_FLAGS(array) & NPY_OWNDATA ) ) {
+        if( ! ( PyArray_FLAGS(array) & NPY_ARRAY_OWNDATA ) ) {
             PyErr_SetString(PyExc_TypeError, "Array must own its data.");
             return false;
         }
@@ -107,23 +106,24 @@
                 "Array must be FORTRAN contiguous.  A non-FORTRAN-contiguous array was given");
             return false;
         }
-        unsigned r = array->dimensions[0];
-        unsigned c = array->dimensions[1];
-        unsigned s = array->dimensions[2];
-        *m = new MatT( (typename MatT::elem_type *)array_data(array), r, c, s, false, false );
+        arma::uword r = arma::uword( array_dimensions(array)[0] );
+        arma::uword c = arma::uword( array_dimensions(array)[1] );
+        arma::uword s = arma::uword( array_dimensions(array)[2] );
+        *m = new MatT( (eT*)array_data(array), r, c, s, false, false );
         return true;
     }
 
     template< typename MatT >
     PyObject* armanpy_cube_copy_to_numpy( MatT * m )
     {
+        typedef typename MatT::elem_type eT;
         npy_intp dims[3] = { m->n_rows, m->n_cols, m->n_slices };
         PyObject* array = PyArray_EMPTY( ArmaTypeInfo<MatT>::numdim, dims, ArmaTypeInfo<MatT>::type, true);
         if ( !array || !array_is_fortran( array ) ) {
             PyErr_SetString( PyExc_TypeError, "Creation of 3-dimensional return array failed" );
             return NULL;
         }
-        std::copy( m->begin(), m->end(), reinterpret_cast< typename MatT::elem_type *>(array_data(array)) );
+        std::copy( m->begin(), m->end(), reinterpret_cast<eT*>(array_data(array)) );
         return array;
      }
 
@@ -132,30 +132,31 @@
     template< typename MatT >
     PyObject* armanpy_cube_bsptr_as_numpy_with_shared_memory( boost::shared_ptr< MatT > m )
     {
+        typedef typename MatT::elem_type eT;
         npy_intp dims[3] = { 1, 1, 1 };
-        PyArrayObject* ary = (PyArrayObject*)PyArray_EMPTY(3, dims, NumpyType< typename MatT::elem_type >::val, true);
+        PyArrayObject* ary = (PyArrayObject*)PyArray_EMPTY(3, dims, NumpyType<eT>::val, true);
         if ( !ary || !array_is_fortran(ary) ) { return NULL; }
 
-        ary->dimensions[0] = m->n_rows;
-        ary->dimensions[1] = m->n_cols;
-        ary->dimensions[2] = m->n_slices;
-        ary->strides[0]    = sizeof( typename MatT::elem_type  );
-        ary->strides[1]    = sizeof( typename MatT::elem_type  ) * m->n_rows;
-        ary->strides[2]    = sizeof( typename MatT::elem_type  ) * m->n_rows * m->n_cols;
+        array_dimensions(ary)[0] = m->n_rows;
+        array_dimensions(ary)[1] = m->n_cols;
+        array_dimensions(ary)[2] = m->n_slices;
+        array_strides(ary)[0]    = sizeof(eT);
+        array_strides(ary)[1]    = sizeof(eT) * m->n_rows;
+        array_strides(ary)[2]    = sizeof(eT) * m->n_rows * m->n_cols;
 
-        // 1. We do not need the memory at ary->data anymore
-        //    This can be simply removed by PyArray_free( ary->data );
-        PyArray_free( ary->data );
+        // 1. We do not need the memory at array_data(ary) anymore
+        //    This can be simply removed by PyArray_free( array_data(ary) );
+        PyDataMem_FREE( array_data(ary) );
 
-        // 2. We should "implant" the m->mem into ary->data
+        // 2. We should "implant" the m->mem into array_data(ary)
         //    Here we use the trick from http://blog.enthought.com/?p=62
-        ary->flags = ary->flags & ~( NPY_OWNDATA );
+        PyArray_CLEARFLAGS( ary, NPY_ARRAY_OWNDATA );
         ArmaBsptrCapsule< MatT > *capsule;
         capsule      = PyObject_New( ArmaBsptrCapsule< MatT >, &ArmaBsptrCapsulePyType<MatT>::object );
         capsule->mat = new boost::shared_ptr< MatT >();
-        ary->data = (char *)( m->mem );
+        array_set_data( ary, m->mem );
         (*(capsule->mat)) = m;
-        PyArray_BASE(ary) = (PyObject *)capsule;
+        array_set_base_object( ary, capsule );
         return (PyObject*)ary;
     }
 
@@ -184,7 +185,7 @@
         array = obj_to_array_no_conversion( $input, ArmaTypeInfo<ARMA_MAT_TYPE>::type );
         if( !array ) SWIG_fail;
         $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
-                                array->dimensions[0], array->dimensions[1], array->dimensions[2], false );
+                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), false );
     }
 
     %typemap( argout )
@@ -242,7 +243,7 @@
         array = obj_to_array_no_conversion( $input, ArmaTypeInfo<ARMA_MAT_TYPE>::type );
         if( !array ) SWIG_fail;
         $1 = new ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
-                                array->dimensions[0], array->dimensions[1], array->dimensions[2], false );
+                                arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), arma::uword( array_dimensions(array)[2] ), false );
     }
 
     %typemap( argout )

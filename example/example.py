@@ -17,36 +17,40 @@ from armanpyexample import *
 
 def example_usage():
 
-	# New instance of class using arma::mat
-	ex = Example( 5 )
-	
-	# return values with and without boost:shared_ptr
-	m1 = ex.get()
-	m2 = ex.get_sptr()
-	print m1
-	print m1 == m2
-	
-	# Input arguments must have FORTRAN odering: i.e. order="F"
-	ex.set( N.array( [ [1.,2.,3.], [4.,5.,0.6] ], order="F" ) )
-	print ex.get()
-	
-	# The following would cause an exception
-	# ex.set_m( N.array( [ [1.,2.,3.], [4.,5.,.6] ], order="C" ) )
-	# --> TypeError: Array must be FORTRAN contiguous. A non-FORTRAN-contiguous array was given.
-	
-	# In the following the size and content of a matrix is modified
-	m = N.array( [ [1.,2.,3.], [4.,5.,0.6] ], order="F" )
-	ex.modify( m, 9, 9 )
-	print m
-	
-	# Note that after the matrix was modifed by this function it does not
-	# own its memory. So one can e.g. not resize it
-	# m.resize( 81, 1 ) ---> ValueError: cannot resize this array: it does not own its data
-	# But it is easy to copy it and work with it
-	m = N.array( m )
-	m.resize(81,1)
-	print m.shape
-	
-	
+    # New instance of class using arma::mat
+    ex = Example( 5 )
+
+    
+    # return values with and without boost:shared_ptr
+    m1 = ex.get()
+    print m1
+        
+    m2 = ex.get_sptr()
+    print N.all( N.all( m1 == m2 ) )
+
+    # Input arguments must have FORTRAN odering: i.e. order="F"
+    ex.set( N.array( [ [1.,2.,3.], [4.,5.,0.6] ], order="F" ) )
+    print ex.get()
+    
+
+    
+    # The following would cause an exception
+    # ex.set_m( N.array( [ [1.,2.,3.], [4.,5.,.6] ], order="C" ) )
+    # --> TypeError: Array must be FORTRAN contiguous. A non-FORTRAN-contiguous array was given.
+    
+    # In the following the size and content of a matrix is modified
+    m = N.array( [ [1.,2.,3.], [4.,5.,0.6] ], order="F" )
+    ex.modify( m, 9, 9 )
+    print m
+    
+    # Note that after the matrix was modifed by this function it does not
+    # own its memory. So one can e.g. not resize it
+    # m.resize( 81, 1 ) ---> ValueError: cannot resize this array: it does not own its data
+    # But it is easy to copy it and work with it
+    m = N.array( m )
+    m.resize(81,1)
+    print m.shape
+    
+    
 if __name__ == '__main__':
-	example_usage()
+    example_usage()
