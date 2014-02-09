@@ -9,7 +9,7 @@
 // of the License or (at your option) any later version.
 // (see http://www.opensource.org/licenses for more info)
 
-#include "test.hpp"
+#include "armanpy_test_lib.hpp"
 
 template class CubeTestClass< arma::Cube<double> >;
 template class CubeTestClass< arma::Cube<float> >;

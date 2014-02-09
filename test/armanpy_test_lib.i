@@ -14,7 +14,7 @@
 #define SWIG_FILE_WITH_INIT
 
 /* Includes the header in the wrapper code */
-#include "test.hpp"
+#include "armanpy_test_lib.hpp"
 %}
 
 /* We need this for boost_shared::ptr support */
@@ -34,7 +34,7 @@
 }
 
 /* Parse the header file to generate wrappers */
-%include "test.hpp"
+%include "armanpy_test_lib.hpp"
 
 /* Instantiate some of the classes */
 %template() MatTestClass< arma::Mat< double > >;

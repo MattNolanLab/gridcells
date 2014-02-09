@@ -193,19 +193,23 @@ public:
     };
 
     void mod_content( MatT& A ) {
+        typedef typename MatT::elem_type eT;
         A.randn( A.n_rows, A.n_cols );
-        A.fill( MatT::elem_type( 25, 35 ) );
+        A.fill( eT( 25, 35 ) );
         A(0,0)=00;
     };
 
-    void mod_size( MatT& A, unsigned r, unsigned c ) {
+    void mod_size( MatT& A, unsigned r, unsigned c )
+    {
+        typedef typename MatT::pod_type rT;
+        typedef typename MatT::elem_type eT;
         A.resize( r, c );
         A.randn( r, c );
         for( unsigned i=0; i<r; i++ ) {
             for( unsigned j=0; j<c; j++ ) {
-                MatT::pod_type re = (MatT::pod_type)(i*10+j);
-                MatT::pod_type im = (MatT::pod_type)( 0.1 *( i*10+j ) );
-                A(i,j) = MatT::elem_type( re, im );
+                rT re = rT(i*10+j);
+                rT im = rT( 0.1 *( i*10+j ) );
+                A(i,j) = eT( re, im );
             }
         }
     };

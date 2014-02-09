@@ -75,9 +75,9 @@
                 // 2. We should "implant" the m->mem into array_data(ary)
                 //    Here we use the trick from http://blog.enthought.com/?p=62
                 // array_flags(ary) = array_flags(ary) & ~( NPY_ARRAY_OWNDATA );
-                PyArray_CLEARFLAGS( ary, NPY_ARRAY_OWNDATA );
+                array_clear_flags( ary, NPY_ARRAY_OWNDATA );
                 ArmaCapsule< MatT > *capsule;
-                capsule      = PyObject_New( ArmaCapsule< MatT >, &ArmaCapsulePyType<MatT>::object );
+                capsule      = PyObject_New( ArmaCapsule< MatT >, &ArmaCapsulePyType< MatT >::object );
                 capsule->mat = m;
                 //ary->data = (char *)capsule->mat->mem;
                 array_set_data( ary, capsule->mat->mem );
@@ -120,8 +120,8 @@
     PyObject* armanpy_mat_copy_to_numpy( MatT * m )
     {
         typedef typename MatT::elem_type eT;
-        npy_intp dims[2] = { m->n_rows, m->n_cols };
-        PyObject* array = PyArray_EMPTY( ArmaTypeInfo<MatT>::numdim, dims, ArmaTypeInfo<MatT>::type, true);
+        npy_intp dims[2] = { npy_intp(m->n_rows), npy_intp(m->n_cols) };
+        PyObject* array = PyArray_EMPTY( ArmaTypeInfo< MatT >::numdim, dims, ArmaTypeInfo< MatT >::type, true);
         if ( !array || !array_is_fortran( array ) ) {
             PyErr_SetString( PyExc_TypeError, "Creation of 2-dimensional return array failed" );
             return NULL;
@@ -152,10 +152,10 @@
         // 2. We should "implant" the m->mem into array_data(ary)
         //    Here we use the trick from http://blog.enthought.com/?p=62
         // array_flags(ary) = array_flags(ary) & ~( NPY_ARRAY_OWNDATA );
-        PyArray_CLEARFLAGS( ary, NPY_ARRAY_OWNDATA );
+        array_clear_flags( ary, NPY_ARRAY_OWNDATA );
 
         ArmaBsptrCapsule< MatT > *capsule;
-        capsule      = PyObject_New( ArmaBsptrCapsule< MatT >, &ArmaBsptrCapsulePyType<MatT>::object );
+        capsule      = PyObject_New( ArmaBsptrCapsule< MatT >, &ArmaBsptrCapsulePyType< MatT >::object );
         capsule->mat = new boost::shared_ptr< MatT >();
         // This currently works, but this may break with future versions of numpy
         // ary->data = (char *)( m->mem );
@@ -187,7 +187,7 @@
         (       ARMA_MAT_TYPE   ) ( PyArrayObject* array=NULL )
     {
         if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true ) ) SWIG_fail;
-        array = obj_to_array_no_conversion( $input, ArmaTypeInfo<ARMA_MAT_TYPE>::type );
+        array = obj_to_array_no_conversion( $input, ArmaTypeInfo< ARMA_MAT_TYPE >::type );
         if( !array ) SWIG_fail;
         $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array), array_dimensions(array)[0], array_dimensions(array)[1], false );
     }
@@ -244,7 +244,7 @@
         ( const ARMA_MAT_TYPE * ) ( PyArrayObject* array=NULL )
     {
         if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true ) ) SWIG_fail;
-        array = obj_to_array_no_conversion( $input, ArmaTypeInfo<ARMA_MAT_TYPE>::type );
+        array = obj_to_array_no_conversion( $input, ArmaTypeInfo< ARMA_MAT_TYPE >::type );
         if( !array ) SWIG_fail;
         $1 = new ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
                                 arma::uword( array_dimensions(array)[0] ), arma::uword( array_dimensions(array)[1] ), false );

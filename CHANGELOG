@@ -1,0 +1,20 @@
+0.1.3 (2014-02-08)
+------------------
+
+- Bugfixes for linux
+- Single CMakeLists.txt file
+
+0.1.2 (2014-02-07) 
+------------------
+
+- Proper support for different NumPy API versions (pre 1.7 and 1.7 and post)
+
+0.1.1 (2012-11-06)
+------------------
+
+- Added support for pointer and references
+
+0.1.0 (2012-10-30)
+------------------
+
+- Initial version

@@ -11,9 +11,15 @@ It also supports boost::shared_ptr wrapped return values of Armadillo matrices.
 Usage
 -----
 
-See the file example/example.i and test/test.i how to use ArmaNpy to generate bindings for a set of classes
-defined in example/example.hpp and test/test.hpp.
-See example/example.py and test/armanpy_tests.py for the Python side of usage (note that armanpy_tests.py is just unit tests).
+For general information on how to use SWIG to generate python bindings see
+http://www.swig.org/Doc2.0/Python.html.
+
+See the file example/example.i and test/armanpy_test_lib.i how to use ArmaNpy
+to generate bindings for a set of classes defined in example/example.hpp and
+test/armanpy_test_lib.hpp.
+
+See example/example.py and test/armanpy_test_run.py for the Python side of
+usage (note that armanpy_test_run.py is just unit tests).
 
 How to compile and run the example and the tests?
 -------------------------------------------------
@@ -24,17 +30,23 @@ How to compile and run the example and the tests?
 
 From the command line this can be done as follows for the example dir (adapt to your path settings and use '\' instedead of '/' on Windows). The same holds for the test dir.
 
-cd /path/to/armanpy/example
+cd /path/to/armanpy
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DARMADILLO_INCLUDE_DIR=/path/to/your/armadillo/include
 cmake --build . --config Release
-cd ..
-python example.py
+
+The above commands will generate all necessary files in build/bin.
+
+To run the tests and examples either run
+
+ctest 
 
 or 
 
-python armanpy_tests.py
+cd bin
+python example.py
+python armanpy_test_run.py
 
 
 *Note* : -DCMAKE_BUILD_TYPE=Release is used bcs on Windows a typical Python distribution does not

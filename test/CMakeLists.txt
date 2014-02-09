@@ -9,110 +9,23 @@
 # of the License or (at your option) any later version.
 # (see http://www.opensource.org/licenses for more info)
 
-cmake_minimum_required(VERSION 2.8.5 FATAL_ERROR)
+# build the armanpy_test_lib library
+add_library( armanpy_test_lib SHARED armanpy_test_lib.cpp armanpy_test_lib.hpp )
 
-project( armanpytest )
+##
+## Set up the swig wrapper
+##
 
-SET( CMAKE_VERBOSE_MAKEFILE ON )
-
-### Armadillo
-
-find_path( ARMADILLO_INCLUDE_DIR
-		NAMES armadillo
-        PATHS ../../../MLPP/git/dependencies/armadillo-3.4.3/include
-		      ../../../MLPP/git/dependencies/armadillo/include
-			  ../../../MLPP/code/dependencies/armadillo-3.4.3/include
-			  ../../../MLPP/code/dependencies/armadillo/include
-)
-
-message( STATUS "Armadillo" )
-message( STATUS "    IncDirs: ${ARMADILLO_INCLUDE_DIR}" )
-
-### Swig
-find_package(SWIG REQUIRED)
-include( ${SWIG_USE_FILE} )
-message( STATUS "SWIG ${SWIG_VERSION}" )
-message( STATUS "  Executable: ${SWIG_EXECUTABLE}" )
-
-### Python
-find_package( PythonLibs REQUIRED )
-find_package( PythonInterp REQUIRED )
-message( STATUS "Python ${PYTHON_VERSION_STRING}" )
-message( STATUS "  Executable: ${PYTHON_EXECUTABLE}" )
-
-### Boost
-find_package( Boost 1.42.0 REQUIRED )
-message( STATUS "Boost C++" )
-message( STATUS "    IncDirs: ${Boost_INCLUDE_DIRS}" )
-
-
-### NumPy
-if( NOT NUMPY_INCLUDE_DIRS ) 
-
-	execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import numpy; print numpy.get_include();"
-					  RESULT_VARIABLE NUMPY_RESULT
-					  OUTPUT_VARIABLE NUMPY_OUTPUT
-					  ERROR_VARIABLE NUMPY_ERRUR
-					  )
-
-	if( ${NUMPY_RESULT} )
-		message( FATAL "Failed to find numpy includes" )
-	else()
-		string(STRIP ${NUMPY_OUTPUT} NUMPY_INCLUDE_DIRS)
-		set( NUMPY_INCLUDE_DIRS ${NUMPY_INCLUDE_DIRS} CACHE PATH "Include path for numpy headers" )
-		
-		execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import numpy; print numpy.version.full_version;"
-					  RESULT_VARIABLE NUMPY_RESULT
-					  OUTPUT_VARIABLE NUMPY_OUTPUT
-					  ERROR_VARIABLE NUMPY_ERRUR
-					  )
-
-		string(STRIP ${NUMPY_OUTPUT} NUMPY_VERSION_STRING)
-		set( NUMPY_VERSION_STRING ${NUMPY_VERSION_STRING} CACHE STRING "Numpy version" )
-	endif()
-	
-	
-endif()
-message( STATUS "Numpy ${NUMPY_VERSION_STRING}" )
-message( STATUS "  Version: ${NUMPY_VERSION_STRING}" )
-message( STATUS "  Include: ${NUMPY_INCLUDE_DIRS}" )
-
-if( MSVC )
-	# for multi-config build MSVC
-	foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-		string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-		set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${PROJECT_BINARY_DIR}/bin" )
-		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${PROJECT_BINARY_DIR}/bin" )
-		set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${PROJECT_BINARY_DIR}/bin" )
-	endforeach()
-else()
-	# For the generic no-config case (e.g. with mingw)
-	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin" )
-	set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin" )
-	set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin" )
-endif()
-
-set( ARMANPY_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/../include )
-include_directories(
-	${PROJECT_SOURCE_DIR}
-	${ARMANPY_INCLUDE_DIR}
-	${NUMPY_INCLUDE_DIRS}
-	${PYTHON_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${Boost_INCLUDE_DIRS}
-	${ARMADILLO_INCLUDE_DIR} 
-)
-
-set( TEST_LIBRARY_NAME armanpytest )
-
-add_library( ${TEST_LIBRARY_NAME} SHARED test.cpp test.hpp )
-
+# Swig shall but all stuff to the same directory where the *.so or *.pyd are placed
 SET( CMAKE_SWIG_OUTDIR "${PROJECT_BINARY_DIR}/bin" )
-set_source_files_properties( test.i PROPERTIES CPLUSPLUS ON)
-set_source_files_properties( test.i PROPERTIES SWIG_FLAGS "-includeall;-ignoremissing" ) # ;-debug-tmused;-debug-typedef;-debug-typemap" )
-swig_add_module( armanpytest python test.i )
-swig_link_libraries( armanpytest ${TEST_LIBRARY_NAME} ${PYTHON_LIBRARIES} )
-set( SWIG_MODULE_armanpytest_EXTRA_DEPS armanpy.i numpy.i test.cpp test.hpp )
 
-enable_testing()
-add_test( NAME ArmaNpyTest COMMAND ${PYTHON_EXECUTABLE} armanpy_tests.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} )
+# We need to say that we deal with C++ and do not care about missing include files and declarations
+set_source_files_properties( armanpy_test_lib.i PROPERTIES CPLUSPLUS ON)
+set_source_files_properties( armanpy_test_lib.i PROPERTIES SWIG_FLAGS "-ignoremissing;-w509" )
+
+swig_add_module    ( armanpytest python armanpy_test_lib.i )
+swig_link_libraries( armanpytest armanpy_test_lib ${PYTHON_LIBRARIES} )
+
+configure_file( armanpy_test_run.py "${CMAKE_SWIG_OUTDIR}/armanpy_test_run.py" COPYONLY )
+
+add_test( NAME armanpy_test_run COMMAND ${PYTHON_EXECUTABLE} armanpy_test_run.py WORKING_DIRECTORY ${CMAKE_SWIG_OUTDIR} )

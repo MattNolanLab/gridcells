@@ -51,9 +51,9 @@
 
                 // 2. We should "implant" the m->mem into array_data(ary)
                 //    Here we use the trick from http://blog.enthought.com/?p=62
-                PyArray_CLEARFLAGS( ary, NPY_ARRAY_OWNDATA );
+                array_clear_flags( ary, NPY_ARRAY_OWNDATA );
                 ArmaCapsule< VecT > *capsule;
-                capsule      = PyObject_New( ArmaCapsule< VecT >, &ArmaCapsulePyType<VecT>::object );
+                capsule      = PyObject_New( ArmaCapsule< VecT >, &ArmaCapsulePyType< VecT >::object );
                 capsule->mat = m;
                 array_set_data( ary, capsule->mat->mem );
                 array_set_base_object( ary, capsule );
@@ -74,8 +74,8 @@
     PyObject* armanpy_vec_copy_to_numpy( VecT * m )
     {
         typedef typename VecT::elem_type eT;
-        npy_intp dims[1] = { m->n_elem };
-        PyObject* array = PyArray_EMPTY( ArmaTypeInfo<VecT>::numdim, dims, ArmaTypeInfo<VecT>::type, true);
+        npy_intp dims[1] = { npy_intp(m->n_elem) };
+        PyObject* array = PyArray_EMPTY( ArmaTypeInfo< VecT >::numdim, dims, ArmaTypeInfo< VecT >::type, true);
         if ( !array || !array_is_contiguous( array ) ) {
             PyErr_SetString( PyExc_TypeError, "Creation of 1-dimensional return array failed" );
             return NULL;
@@ -103,9 +103,9 @@
 
         // 2. We should "implant" the m->mem into array_data(ary)
         //    Here we use the trick from http://blog.enthought.com/?p=62
-        PyArray_CLEARFLAGS( ary, NPY_ARRAY_OWNDATA );
+        array_clear_flags( ary, NPY_ARRAY_OWNDATA );
         ArmaBsptrCapsule< VecT > *capsule;
-        capsule      = PyObject_New( ArmaBsptrCapsule< VecT >, &ArmaBsptrCapsulePyType<VecT>::object );
+        capsule      = PyObject_New( ArmaBsptrCapsule< VecT >, &ArmaBsptrCapsulePyType< VecT >::object );
         capsule->mat = new boost::shared_ptr< VecT >();
         array_set_data( ary, m->mem );
         (*(capsule->mat)) = m;
@@ -134,7 +134,7 @@
         (       ARMA_MAT_TYPE   ) ( PyArrayObject* array=NULL )
     {
         if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true ) ) SWIG_fail;
-        array = obj_to_array_no_conversion( $input, ArmaTypeInfo<ARMA_MAT_TYPE>::type );
+        array = obj_to_array_no_conversion( $input, ArmaTypeInfo< ARMA_MAT_TYPE >::type );
         if( !array ) SWIG_fail;
         $1 = ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array), arma::uword( array_dimensions(array)[0] ), false );
     }
@@ -220,7 +220,7 @@
         ( const ARMA_MAT_TYPE * ) ( PyArrayObject* array=NULL )
     {
         if( ! armanpy_basic_typecheck< ARMA_MAT_TYPE >( $input, true ) ) SWIG_fail;
-        array = obj_to_array_no_conversion( $input, ArmaTypeInfo<ARMA_MAT_TYPE>::type );
+        array = obj_to_array_no_conversion( $input, ArmaTypeInfo< ARMA_MAT_TYPE >::type );
         if( !array ) SWIG_fail;
         $1 = new ARMA_MAT_TYPE( ( ARMA_MAT_TYPE::elem_type *)array_data(array),
                                 arma::uword( array_dimensions(array)[0] ), false );

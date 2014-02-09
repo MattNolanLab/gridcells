@@ -19,12 +19,14 @@
 %fragment("ArmaNumPy_Backward_Compatibility", "header")
 {
 %#if NPY_API_VERSION < 0x00000007
-%#define NPY_ARRAY_OWNDATA NPY_ARRAY_OWNDATA
+%#define NPY_ARRAY_OWNDATA               NPY_OWNDATA
 %#define array_set_base_object(arr, obj) ( PyArray_BASE(arr) = (PyObject *)obj )
-%#define array_set_data( arr, mem )      ( ((PyArrayObject*)arr)->data = mem )
+%#define array_set_data( arr, mem )      ( ((PyArrayObject*)arr)->data = (char*)mem )
+%#define array_clear_flags( arr, flg )   (((PyArrayObject*)arr)->flags) = ( (((PyArrayObject*)arr)->flags) & ~( flg ) )
 %#else
 %#define array_set_base_object(arr, obj) PyArray_SetBaseObject(arr, (PyObject *)obj )
 %#define array_set_data( arr, mem )      ( ((PyArrayObject_fields*)arr)->data = (char*)mem )
+%#define array_clear_flags( arr, flg )   PyArray_CLEARFLAGS( arr, flg )
 %#endif
 }
 
@@ -75,10 +77,10 @@
             if( sizeof(npy_intp) > sizeof(arma::uword) ) {
                 npy_intp  ndim = array_numdims(array);
                 npy_intp *dims = array_dimensions(array);
-                npy_intp max_arma_uword = (npy_intp)(2) ^ ( 8 * sizeof(arma::uword) ) - 1;
+                npy_intp max_arma_uword = npy_intp( std::numeric_limits< arma::uword >::max() ); // As there are more byte for npy_intp this is no problem
                 for( npy_intp i=0; i < ndim; i++ ) {
                     if( dims[i] > max_arma_uword ) {
-                        if( raise ) PyErr_Format( PyExc_TypeError, "Dimension %i of array to large (%i). Only %i elements per dimension supported.", i, dims[i], max_arma_uword );
+                        if( raise ) PyErr_Format( PyExc_TypeError, "Dimension %li of array to large (%li). Only %li elements per dimension supported.", i, dims[i], max_arma_uword );
                         return false;
                     };
                 }
@@ -86,7 +88,6 @@
             return true;
         }
     }
-
 }
 
 #define ARMANPY_SHARED_PTR
