@@ -73,7 +73,7 @@
             // if( ! m->uses_local_mem() ) {
                 // 1. We do not need the memory at array_data(ary) anymore
                 //    This can be simply removed by PyArray_free( array_data(ary) );
-                PyDataMem_FREE( array_data(ary) );
+                array_free_data( array_data(ary) );
 
                 // 2. We should "implant" the m->mem into array_data(ary)
                 //    Here we use the trick from http://blog.enthought.com/?p=62
@@ -146,7 +146,7 @@
 
         // 1. We do not need the memory at array_data(ary) anymore
         //    This can be simply removed by PyArray_free( array_data(ary) );
-        PyDataMem_FREE( array_data(ary) );
+        array_free_data( array_data(ary) );
 
         // 2. We should "implant" the m->mem into array_data(ary)
         //    Here we use the trick from http://blog.enthought.com/?p=62

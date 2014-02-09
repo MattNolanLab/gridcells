@@ -23,10 +23,12 @@
 %#define array_set_base_object(arr, obj) ( PyArray_BASE(arr) = (PyObject *)obj )
 %#define array_set_data( arr, mem )      ( ((PyArrayObject*)arr)->data = (char*)mem )
 %#define array_clear_flags( arr, flg )   (((PyArrayObject*)arr)->flags) = ( (((PyArrayObject*)arr)->flags) & ~( flg ) )
+%#define array_free_data( arr )          PyArray_free( arr )
 %#else
 %#define array_set_base_object(arr, obj) PyArray_SetBaseObject(arr, (PyObject *)obj )
 %#define array_set_data( arr, mem )      ( ((PyArrayObject_fields*)arr)->data = (char*)mem )
 %#define array_clear_flags( arr, flg )   PyArray_CLEARFLAGS( arr, flg )
+%#define array_free_data( arr )          PyArray_free( arr )
 %#endif
 }
 
