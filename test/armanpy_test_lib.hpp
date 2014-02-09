@@ -21,7 +21,7 @@ building a DLL on windows.
 // We are using the Visual Studio Compiler and building Shared libraries
 
 #if defined (_WIN32)
-	  #if defined(armanpytest_EXPORTS)
+	  #if defined(armanpy_test_lib_EXPORTS)
 		#define DLLEXPORT __declspec(dllexport)
 	  #else
 		#define DLLEXPORT __declspec(dllimport)
