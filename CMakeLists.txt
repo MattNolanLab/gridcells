@@ -17,7 +17,7 @@ project( armanpy )
 
 set( ARMANPY_VERSION_MAJOR 0 )
 set( ARMANPY_VERSION_MINOR 1 )
-set( ARMANPY_VERSION_PATCH 2 )
+set( ARMANPY_VERSION_PATCH 3 )
 
 ### Armadillo
 
