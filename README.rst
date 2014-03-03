@@ -1,4 +1,4 @@
-Grid cell analysis package
-==========================
+Grid cell library
+=================
 
-This package defines machinery to analyse grid cell data.
+This library defines machinery to analyse grid cell data.
