@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Grid cells package's documentation!
+Welcome to the Grid cells package documentation!
 ==============================================
 
 Contents:
@@ -11,7 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-
+   modules/index.rst
 
 Indices and tables
 ==================

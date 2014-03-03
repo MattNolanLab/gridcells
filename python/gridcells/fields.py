@@ -1,25 +1,17 @@
-#
-#   grid_cells.py
-#
-#   Grid cell analysis module. Use this to analyse spikes/membrane potentials
-#   of grid cell models.
-#
-#       Copyright (C) 2012  Lukas Solanka <l.solanka@sms.ed.ac.uk>
-#       
-#       This program is free software: you can redistribute it and/or modify
-#       it under the terms of the GNU General Public License as published by
-#       the Free Software Foundation, either version 3 of the License, or
-#       (at your option) any later version.
-#       
-#       This program is distributed in the hope that it will be useful,
-#       but WITHOUT ANY WARRANTY; without even the implied warranty of
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#       GNU General Public License for more details.
-#       
-#       You should have received a copy of the GNU General Public License
-#       along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+'''
+.. currentmodule:: gridcells.fields
 
+The :mod:`~gridcells.fields` module contains routines to analyse spiking data
+either from experiments involoving a rodent running in an arena or simulations
+involving an animat running in a simulated arena.
+
+Functions
+---------
+.. autosummary::
+
+    gaussianFilter
+
+'''
 import numpy    as np
 import numpy.ma as ma
 
@@ -27,16 +19,25 @@ from scipy.integrate             import trapz
 from scipy.signal                import correlate2d
 from scipy.ndimage.interpolation import rotate
 
-__all__ = ['gaussianFilter', 'extractSpikePositions2D', 'SNSpatialRate2D',
-        'SNFiringRate', 'motionDirection', 'SNAutoCorr', 'cellGridnessScore']
+#__all__ = ['gaussianFilter', 'extractSpikePositions2D', 'SNSpatialRate2D',
+#        'SNFiringRate', 'motionDirection', 'SNAutoCorr', 'cellGridnessScore']
 
 
-
-## Simple Gaussian function
-#
-# @param X      The X parameter for the Gaussian
-# @param sigma  Std. deviation of the Gaussian
 def gaussianFilter(X, sigma):
+    '''Simple Gaussian filter.
+
+    Parameters
+    ----------
+    X : a numeric value or any sequence
+        The X parameter for the Gaussian
+    sigma : float
+        Standard deviation of the Gaussian
+
+    Returns
+    -------
+    The value of the Gaussian filter for the input argument. The shape is the
+    same as `X`.
+    '''
     return np.exp(-X**2/ 2.0 / sigma**2)
 
 
