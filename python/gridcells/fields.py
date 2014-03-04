@@ -10,6 +10,10 @@ Functions
 .. autosummary::
 
     gaussianFilter
+    extractSpikePositions2D
+    SNSpatialRate2D
+    SNAutoCorr
+    cellGridnessScore
 
 '''
 import numpy    as np
@@ -35,29 +39,73 @@ def gaussianFilter(X, sigma):
 
     Returns
     -------
-    The value of the Gaussian filter for the input argument. The shape is the
-    same as `X`.
+    type(X)
+        The value of the Gaussian filter for the input argument. The shape is the
+        same as `X`.
     '''
     return np.exp(-X**2/ 2.0 / sigma**2)
 
 
 
-def extractSpikePositions2D(spikeTimes, rat_pos_x, rat_pos_y, dt):
-    '''
-    Extract spike positions from the rat tracking data and cell spike times.
-    Both positions and spikes must be aligned!
+def extractSpikePositions2D(spikeTimes, pos_x, pos_y, dt):
+    '''Extract positions of the animal for each spike.
+
+    Extract spike positions from the animal tracking data and neuron spike times.
+    Both animal positions positions and spikes must be *aligned in time*.
+
+    Parameters
+    ----------
+    spikeTimes : np.ndarray
+        A vector that contains spike times for the neuron.
+    pos_x, pos_y : np.ndarray
+        An array containing the animal/animat positional information. The
+        positions must be evenly spaced in time.
+    dt : float
+        Time step of the positional information in `pos_x` and `pos_y`.
+
+    Returns
+    -------
+    A tuple (npos_x, npos_y, max_index)
+        A tuple containing positional information and an index into the
+        positional data, of the last spike in `spikeTimes`.
     '''
     neuronPos_i = np.array(spikeTimes/dt, dtype=int)
-    neuronPos_x = rat_pos_x[neuronPos_i]
-    neuronPos_y = rat_pos_y[neuronPos_i]
-
+    neuronPos_x = pos_x[neuronPos_i]
+    neuronPos_y = pos_y[neuronPos_i]
     return (neuronPos_x, neuronPos_y, np.max(neuronPos_i))
 
 
-def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
-    '''
-    Preprocess neuron spike times into a spatial rate map, given arena parameters.
-    Both spike times and rat tracking data must be aligned in time!
+
+def SNSpatialRate2D(spikeTimes, pos_x, pos_y, dt, arenaDiam, h):
+    '''Compute spatial rate map for spikes of a given neuron.
+
+    Preprocess neuron spike times into a smoothed spatial rate map, given arena
+    parameters.  Both spike times and positional data must be aligned in time!
+    The rate map will be smoothed by a gaussian kernel.
+
+    Parameters
+    ----------
+    spikeTimes : np.ndarray
+        Spike times for a given neuron.
+    pos_x, pos_y : np.ndarray
+        Vectors of positional data of where the animal was located.
+    dt : float
+        Time step of the positional data. The units must be the same as for
+        `spikeTimes`.
+    arenaDiam : float
+        Diameter of the arena. The result will be a masked array in which all
+        values outside the arena will be invalid.
+    h : float
+        Standard deviation of the Gaussian smoothing kernel.
+
+    Returns
+    -------
+    rateMap : np.ndarray
+        The 2D spatial firing rate map. The shape will be `(arenaDiam/h + 1,
+        arenaDiam/h + 1)`.
+    xedges, yedges : np.ndarray
+        Values of the spatial lags for the correlation function. The same shape
+        as `rateMap.shape[0]`.
     '''
     precision = arenaDiam/h
     xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
@@ -69,11 +117,11 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
         for y_i in xrange(len(yedges)):
             x = xedges[x_i]
             y = yedges[y_i]
-            isNearTrack = np.count_nonzero(np.sqrt((rat_pos_x - x)**2 + (rat_pos_y - y)**2) <= h) > 0
+            isNearTrack = np.count_nonzero(np.sqrt((pos_x - x)**2 + (pos_y - y)**2) <= h) > 0
 
             if isNearTrack:
-                normConst = trapz(gaussianFilter(np.sqrt((rat_pos_x - x)**2 + (rat_pos_y - y)**2), sigma=h), dx=dt)
-                neuronPos_x, neuronPos_y, m_i = extractSpikePositions2D(spikeTimes, rat_pos_x, rat_pos_y, dt)
+                normConst = trapz(gaussianFilter(np.sqrt((pos_x - x)**2 + (pos_y - y)**2), sigma=h), dx=dt)
+                neuronPos_x, neuronPos_y, m_i = extractSpikePositions2D(spikeTimes, pos_x, pos_y, dt)
                 spikes = np.sum(gaussianFilter(np.sqrt((neuronPos_x - x)**2 + (neuronPos_y - y)**2), sigma=h))
                 rateMap[x_i, y_i] = spikes/normConst
 
@@ -86,6 +134,34 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
 
 
 def SNAutoCorr(rateMap, arenaDiam, h):
+    '''Compute autocorrelation function of the spatial firing rate map.
+
+    This function assumes that the arena is a circle and masks all values of
+    the autocorrelation that are outside the `arenaDiam`.
+
+    .. todo::
+
+        This function will undergo serious interface changes in the future.
+
+    Parameters
+    ----------
+    rateMap : np.ndarray
+        Spatial firing rate map (2D). The shape should be `(arenadiam/h+1,
+        arenadiam/2+1)`.
+    arenaDiam : float
+        Diameter of the arena.
+    h : float
+        Precision of the spatial firing rate map.
+
+    Returns
+    -------
+    corr : np.ndarray
+        The autocorrelation function, of shape `(arenadiam/h*2+1,
+        arenaDiam/h*2+1)`
+    xedges, yedges : np.ndarray
+        Values of the spatial lags for the correlation function. The same shape
+        as `corr.shape[0]`.
+    '''
     precision = arenaDiam/h
     xedges = np.linspace(-arenaDiam, arenaDiam, precision*2 + 1)
     yedges = np.linspace(-arenaDiam, arenaDiam, precision*2 + 1)
@@ -148,14 +224,43 @@ def motionDirection(pos_x, pos_y, pos_dt, tend, winLen):
 
 
 def cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
-    '''
-    Compute a cell gridness score by taking the auto correlation of the
-    firing rate map, rotating it, and subtracting maxima of the
-    correlation coefficients of the former and latter, at 30, 90 and 150 (max),
-    and 60 and 120 deg. (minima). This gives the gridness score.
+    '''Calculate gridness score of a spatial firing rate map.
 
+    Parameters
+    ----------
+    rateMap : np.ndarray
+        Spatial firing rate map.
+    arenaDiam : float
+        The diameter of the arena.
+    h : float
+        Precision of the spatial firing rate map.
+
+    Returns
+    -------
+    G : float
+        Gridness score.
+    crossCorr : np.ndarray
+        An array containing cross correlation values of the rotated
+        autocorrelations, with the original autocorrelation.
+    angles : np.ndarray
+        An array of angles corresponding to the `crossCorr` array.
+
+
+    Notes
+    -----
+    This function computes gridness score accoring to [1]_. The auto
+    correlation of the firing rate map is rotated in 3 degree steps. The
+    resulting gridness score is the difference between a minimum of cross
+    correlations at 60 and 90 degrees, and a maximum of cross correlations at
+    30, 90 and 150 degrees.
+    
     The center of the auto correlation map (given by corr_cutRmin) is removed
-    from the map
+    from the map.
+
+    References
+    ----------
+    .. [1] Hafting, T. et al., 2005. Microstructure of a spatial map in the
+       entorhinal cortex. Nature, 436(7052), pp.801-806.
     '''
     rateMap_mean = rateMap - np.mean(np.reshape(rateMap, (1, rateMap.size)))
     autoCorr, autoC_xedges, autoC_yedges = SNAutoCorr(rateMap_mean, arenaDiam, h)
