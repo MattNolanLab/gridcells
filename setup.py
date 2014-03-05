@@ -5,4 +5,5 @@ setup(name='gridcells',
       description='Grid cells package',
       author='Lukas Solanka',
       author_email='lsolanka@gmail.com',
-      packages=['gridcells'])
+      packages=['gridcells'],
+      install_requires=['numpy>=1.8.0'])
