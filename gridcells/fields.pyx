@@ -25,19 +25,14 @@ cimport numpy as np
 DTYPE = np.double
 ctypedef np.double_t DTYPE_t
 
-cdef extern from "math.h":
-    double exp(double x)
 
 from scipy.integrate             import trapz
 from scipy.signal                import correlate2d
 from scipy.ndimage.interpolation import rotate
 
-#__all__ = ['gaussianFilter', 'extractSpikePositions2D', 'SNSpatialRate2D',
-#        'SNFiringRate', 'motionDirection', 'SNAutoCorr', 'cellGridnessScore']
 
-
-cdef np.ndarray[DTYPE_t, ndim=1] gaussianFilter(double[:] x, double[:] y,
-        double mu_x, double mu_y, double sigma):
+cdef np.ndarray[DTYPE_t, ndim=1] gaussianFilter(np.ndarray[DTYPE_t, ndim=1] X,
+        double sigma):
     '''Simple Gaussian filter.
 
     Parameters
@@ -53,12 +48,7 @@ cdef np.ndarray[DTYPE_t, ndim=1] gaussianFilter(double[:] x, double[:] y,
         The value of the Gaussian filter for the input argument. The shape is the
         same as `X`.
     '''
-    cdef int sz = x.shape[0]
-    cdef np.ndarray res = np.zeros((sz, ), dtype=DTYPE)
-    cdef double[:] resView = res
-    for it in range(x.shape[0]):
-        resView[it] = exp(- ((x[it] - mu_x)**2 + (y[it] - mu_y)**2)/ 2.0 / sigma**2)
-    return res
+    return np.exp(-X/ 2.0 / sigma**2)
 
 
 
@@ -123,21 +113,27 @@ def SNSpatialRate2D(spikeTimes, pos_x, pos_y, dt, arenaDiam, h):
         as `rateMap.shape[0]`.
     '''
     precision = arenaDiam/h
-    xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
-    yedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
+    cdef np.ndarray[DTYPE_t, ndim=1] xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
+    cdef np.ndarray[DTYPE_t, ndim=1] yedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
 
-    rateMap = np.zeros((len(xedges), len(yedges)))
+    cdef int x_i, y_i
+    cdef np.ndarray[DTYPE_t, ndim=1] posDist2, neuronPosDist2, neuronPos_x, neuronPos_y
 
-    for x_i in xrange(len(xedges)):
-        for y_i in xrange(len(yedges)):
+    cdef np.ndarray[DTYPE_t, ndim=2] rateMap = \
+            np.zeros((len(xedges), len(yedges)), dtype=DTYPE)
+    neuronPos_x, neuronPos_y, _ = extractSpikePositions2D(spikeTimes, pos_x, pos_y, dt)
+
+    for x_i in range(xedges.shape[0]):
+        for y_i in range(yedges.shape[0]):
             x = xedges[x_i]
             y = yedges[y_i]
-            isNearTrack = np.count_nonzero(np.sqrt((pos_x - x)**2 + (pos_y - y)**2) <= h) > 0
+            posDist2 = (pos_x - x)**2 + (pos_y - y)**2
+            neuronPosDist2 = (neuronPos_x - x)**2 + (neuronPos_y - y)**2
+            isNearTrack = np.count_nonzero(np.sqrt(posDist2) <= h) > 0
 
             if isNearTrack:
-                normConst = trapz(gaussianFilter(pos_x, pos_y, x, y, h), dx=dt)
-                neuronPos_x, neuronPos_y, m_i = extractSpikePositions2D(spikeTimes, pos_x, pos_y, dt)
-                spikes = np.sum(gaussianFilter(neuronPos_x, neuronPos_y, x, y, h))
+                normConst = trapz(np.exp(-posDist2/ 2.0 / h**2), dx=dt)
+                spikes = np.sum(gaussianFilter(neuronPosDist2, sigma=h))
                 rateMap[x_i, y_i] = spikes/normConst
 
     # Mask values which are outside the arena
