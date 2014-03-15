@@ -3,6 +3,7 @@
 *.s
 *.dSYM
 *.swp
+*.swo
 *.pyc
 /build
 /dist
