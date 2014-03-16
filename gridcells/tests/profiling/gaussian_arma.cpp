@@ -4,7 +4,7 @@
 using namespace std;
 using namespace arma;
 
-const int NITER = 2395;
+const int NITER = 3720;
 const int SZ = 60000;
 const double sigma = 1.3;
 
