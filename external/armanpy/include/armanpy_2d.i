@@ -348,7 +348,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 %define %armanpy_mat_return_by_value_typemaps( ARMA_MAT_TYPE )
-    %typemap( out )
+    %typemap( out, fragment="armanpy_mat_typemaps" )
         ( ARMA_MAT_TYPE )
     {
       PyObject* array = armanpy_mat_copy_to_numpy< ARMA_MAT_TYPE >( &$1 );
