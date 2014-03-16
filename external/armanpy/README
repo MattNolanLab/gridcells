@@ -1,0 +1,79 @@
+What is ArmaNpy?
+----------------
+
+ArmaNpy is a set of SWIG interface files which allows generating
+Python bindings to C++ code which uses the Armadillo matrix library.
+From within Python any Armadillo matrices are represented as NumPy matrices.
+This is possible due to the same memory layout used.
+Copying of memory is avoided whenever possible.
+It also supports boost::shared_ptr wrapped return values of Armadillo matrices.
+
+Usage
+-----
+
+For general information on how to use SWIG to generate python bindings see
+http://www.swig.org/Doc2.0/Python.html.
+
+See the file example/example.i and test/armanpy_test_lib.i how to use ArmaNpy
+to generate bindings for a set of classes defined in example/example.hpp and
+test/armanpy_test_lib.hpp.
+
+See example/example.py and test/armanpy_test_run.py for the Python side of
+usage (note that armanpy_test_run.py is just unit tests).
+
+How to compile and run the example and the tests?
+-------------------------------------------------
+
+1) Use CMake to generate your build system based on the provided CMakeLists.txt file in the example or test dir.
+2) Build the resulting project.
+3) Run the Python script example.py or armanpy_tests.py
+
+From the command line this can be done as follows for the example dir (adapt to your path settings and use '\' instedead of '/' on Windows). The same holds for the test dir.
+
+cd /path/to/armanpy
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DARMADILLO_INCLUDE_DIR=/path/to/your/armadillo/include
+cmake --build . --config Release
+
+The above commands will generate all necessary files in build/bin.
+
+To run the tests and examples either run
+
+ctest 
+
+or 
+
+cd bin
+python example.py
+python armanpy_test_run.py
+
+
+*Note* : -DCMAKE_BUILD_TYPE=Release is used bcs on Windows a typical Python distribution does not
+come with the debug version of the Python libraries. Hence, the build would fail for the Debug
+configuration.
+
+*Remark* : To use 64bit under Windows add e.g. -G "Visual Studio 11 Win64" to the first cmake command.
+
+Credits
+-------
+
+The idea of wrapping armadillo matrices py NumPy arrays was taken from Michael Forbes`
+https://bitbucket.org/mforbes/swig_cpp_python/src/cd7cef820273?at=default.
+
+Copyright
+---------
+
+Copyright (C) 2012-2014 Thomas Natschläger (thomas.natschlaeger@gmail.com)
+
+License
+-------
+
+ArmaNpy is provided without any warranty of fitness
+for any purpose. You can redistribute this file
+and/or modify it under the terms of the GNU
+Lesser General Public License (LGPL) as published
+by the Free Software Foundation, either version 3
+of the License or (at your option) any later version.
+(see http://www.opensource.org/licenses for more info)
+
