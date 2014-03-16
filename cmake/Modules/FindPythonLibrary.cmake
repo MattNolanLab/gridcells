@@ -82,6 +82,7 @@ else(EXISTS PYTHON_LIBRARY)
 
       # Put these two variables in the cache so they are visible for the user, but read-only:
       set(PYTHON_INCLUDE_PATH "${_TMP_PYTHON_INCLUDE_PATH}" CACHE PATH "The python include directory" FORCE)
+      set(PYTHON_INCLUDE_DIRS "${_TMP_PYTHON_INCLUDE_PATH}" CACHE PATH "The python include directory" FORCE)
       set(PYTHON_SITE_PACKAGES_DIR "${_TMP_PYTHON_SITE_PACKAGES_DIR}" CACHE PATH "The python site packages dir" FORCE)
 
       # This one is intended to be used and changed by the user for installing own modules:
