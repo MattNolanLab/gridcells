@@ -1,10 +1,7 @@
-#include <armadillo>
+
+#include "fields.hpp"
 
 using namespace arma;
-
-const double dt = 20.;
-const double arenaDiam = 180.;
-const double h = 3.;
 
 vec extractSpikePos(const vec& spikePosIdx, const vec& posData, double dt)
 {
@@ -16,7 +13,9 @@ vec extractSpikePos(const vec& spikePosIdx, const vec& posData, double dt)
 }
 
 
-mat SNSpatialRate2D(const vec& spikeTimes, const vec& pos_x, const vec&pos_y, double dt, double arenaDiam, double h)
+mat
+SNSpatialRate2D(const vec& spikeTimes, const vec& pos_x, const vec& pos_y, 
+        double dt, double arenaDiam, double h)
 {
     double precision = arenaDiam / h;
     vec xedges = arma::linspace(-arenaDiam/2, arenaDiam/2, precision+1);
@@ -54,24 +53,3 @@ mat SNSpatialRate2D(const vec& spikeTimes, const vec& pos_x, const vec&pos_y, do
 }
 
 
-int main(void)
-{
-    vec spikeTimes;
-    vec pos_x;
-    vec pos_y;
-
-    bool loadOK = true;
-    loadOK &= spikeTimes.load("data/spikeTimes.txt", arma::raw_ascii);
-    loadOK &= pos_x.load("data/pos_x.txt", arma::raw_ascii);
-    loadOK &= pos_y.load("data/pos_y.txt", arma::raw_ascii);
-
-    if (!loadOK){
-        cerr << "Could not load data files!" << endl;
-        return 1;
-    }
-
-    mat rateMap = SNSpatialRate2D(spikeTimes, pos_x, pos_y, dt, arenaDiam, h);
-    (rateMap * 1e3).print();
-
-    return 0;
-}
