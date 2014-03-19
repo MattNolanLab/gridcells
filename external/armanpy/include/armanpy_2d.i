@@ -378,7 +378,7 @@
 %armanpy_mat_return_by_value_typemaps( arma::cx_fmat )
 
 %define %armanpy_mat_return_by_reference_typemaps( ARMA_MAT_TYPE )
-    %typemap( out )
+    %typemap( out, fragment="armanpy_mat_typemaps" )
         ( const ARMA_MAT_TYPE & ),
         (       ARMA_MAT_TYPE & )
     {
