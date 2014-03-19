@@ -12,8 +12,11 @@ set (CMAKE_SWIG_OUTDIR "${PROJECT_SOURCE_DIR}/gridcells")
 set_source_files_properties(cppfields.i PROPERTIES CPLUSPLUS ON)
 set_source_files_properties(cppfields.i PROPERTIES SWIG_FLAGS "-ignoremissing" )
 
+set (SWIG_MODULE_cppfields_EXTRA_DEPS ${COMMON_SWIG_DEPS})
+
 swig_add_module (cppfields python cppfields.i)
 swig_link_libraries (cppfields gridcells ${PYTHON_LIBRARIES})
+
 
 
 # Copy the generated module files into-source. This way, the library can be

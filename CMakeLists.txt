@@ -25,6 +25,8 @@ set(CMAKE_MODULE_PATH
 set(GRIDCELLS_VERSION_MAJOR 0)
 set(GRIDCELLS_VERSION_MINOR 1)
 
+set (ARMANPY_DIR "${PROJECT_SOURCE_DIR}/external/armanpy")
+
 
 # Armadillo
 if( NOT ARMADILLO_INCLUDE_DIR )
@@ -56,6 +58,10 @@ message (STATUS "  Include: ${NUMPY_INCLUDE_DIRS}")
 
 
 set (ARMANPY_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/external/armanpy/include")
+file (GLOB COMMON_SWIG_DEPS
+    "${ARMANPY_DIR}/include/*.i"
+    "${ARMANPY_DIR}/include/armanpy.hpp")
+
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
