@@ -408,6 +408,50 @@
 %armanpy_mat_return_by_reference_typemaps( arma::cx_mat )
 %armanpy_mat_return_by_reference_typemaps( arma::cx_fmat )
 
+
+//////////////////////////////////////////////////////////////////////////
+// Typemaps for return by pointer (Pyhon takes ownership of the data!)
+// You MUST ensure that the method/function that returns your matrix as a
+// pointer can give up the reference entirely!
+//////////////////////////////////////////////////////////////////////////
+
+%define %armanpy_mat_return_by_pointer_typemaps( ARMA_MAT_TYPE )
+    %typemap( out, fragment="armanpy_mat_typemaps" )
+        ( ARMA_MAT_TYPE* )
+    {
+        npy_intp dims[2] = { 2, 1 };
+        PyObject* array = PyArray_EMPTY(2, dims, ArmaTypeInfo< ARMA_MAT_TYPE >::type, true);
+        if ( !array || !array_is_fortran( array ) ) {
+            PyErr_SetString( PyExc_TypeError, "Creation of 2-dimensional return array failed" );
+            return NULL;
+        }
+        armanpy_mat_as_numpy_with_shared_memory($1, array);
+        $result = SWIG_Python_AppendOutput($result, array);
+    }
+%enddef
+
+%armanpy_mat_return_by_pointer_typemaps( arma::Mat< double > )
+%armanpy_mat_return_by_pointer_typemaps( arma::Mat< float >  )
+%armanpy_mat_return_by_pointer_typemaps( arma::Mat< int > )
+%armanpy_mat_return_by_pointer_typemaps( arma::Mat< unsigned >  )
+%armanpy_mat_return_by_pointer_typemaps( arma::Mat< arma::sword >  )
+%armanpy_mat_return_by_pointer_typemaps( arma::Mat< arma::uword >  )
+%armanpy_mat_return_by_pointer_typemaps( arma::Mat< arma::cx_double >  )
+%armanpy_mat_return_by_pointer_typemaps( arma::Mat< arma::cx_float >  )
+%armanpy_mat_return_by_pointer_typemaps( arma::Mat< std::complex< double > >  )
+%armanpy_mat_return_by_pointer_typemaps( arma::Mat< std::complex< float > >  )
+%armanpy_mat_return_by_pointer_typemaps( arma::mat )
+%armanpy_mat_return_by_pointer_typemaps( arma::fmat )
+%armanpy_mat_return_by_pointer_typemaps( arma::imat )
+%armanpy_mat_return_by_pointer_typemaps( arma::umat )
+%armanpy_mat_return_by_pointer_typemaps( arma::uchar_mat )
+%armanpy_mat_return_by_pointer_typemaps( arma::u32_mat )
+%armanpy_mat_return_by_pointer_typemaps( arma::s32_mat )
+%armanpy_mat_return_by_pointer_typemaps( arma::cx_mat )
+%armanpy_mat_return_by_pointer_typemaps( arma::cx_fmat )
+
+
+
 //////////////////////////////////////////////////////////////////////////
 // Typemaps for return by boost::shared_ptr< ... > functions/methods
 //////////////////////////////////////////////////////////////////////////
