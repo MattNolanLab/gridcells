@@ -7,10 +7,10 @@ set_target_properties(gridcells
     PROPERTIES
         VERSION 0.1.0)
 
-set (CMAKE_SWIG_OUTDIR "${PROJECT_SOURCE_DIR}/gridcells")
+#set (CMAKE_SWIG_OUTDIR "${PROJECT_SOURCE_DIR}/gridcells")
 
 set_source_files_properties(cppfields.i PROPERTIES CPLUSPLUS ON)
-set_source_files_properties(cppfields.i PROPERTIES SWIG_FLAGS "-ignoremissing" )
+set_source_files_properties(cppfields.i PROPERTIES SWIG_FLAGS "-builtin;-O;-ignoremissing" )
 
 set (SWIG_MODULE_cppfields_EXTRA_DEPS ${COMMON_SWIG_DEPS})
 
