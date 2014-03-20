@@ -15,7 +15,7 @@ extractSpikePos(const arma::vec& spikePosIdx, const arma::vec& posData, double d
 }
 
 
-arma::mat
+arma::mat*
 SNSpatialRate2D(const arma::vec& spikeTimes, const arma::vec& pos_x, const
         arma::vec& pos_y, double dt, double arenaDiam, double h)
 {
@@ -23,7 +23,8 @@ SNSpatialRate2D(const arma::vec& spikeTimes, const arma::vec& pos_x, const
     arma::vec xedges = arma::linspace(-arenaDiam/2, arenaDiam/2, precision+1);
     arma::vec yedges = arma::linspace(-arenaDiam/2, arenaDiam/2, precision+1);
 
-    arma::mat rateMap = arma::zeros(xedges.n_elem, yedges.n_elem);
+    arma::mat* rateMap = new arma::mat(xedges.n_elem, yedges.n_elem);
+    rateMap->zeros();
     arma::vec spikePosIdx = spikeTimes / dt;
     arma::vec neuronPos_x = extractSpikePos(spikePosIdx, pos_x, dt);
     arma::vec neuronPos_y = extractSpikePos(spikePosIdx, pos_y, dt);
@@ -45,14 +46,14 @@ SNSpatialRate2D(const arma::vec& spikeTimes, const arma::vec& pos_x, const
                 arma::vec neuronPosDist2 = arma::square(neuronPos_x - x) + 
                                      arma::square(neuronPos_y - y);
                 double spikes = arma::sum(exp( -neuronPosDist2 / 2. / (h*h)));
-                rateMap(x_i, y_i) = spikes / normConst;
+                (*rateMap)(x_i, y_i) = spikes / normConst;
             }
 
             nIter++;
         }
     }
 
-    return rateMap.t();
+    return rateMap;
 }
 
 } // namespace grids
