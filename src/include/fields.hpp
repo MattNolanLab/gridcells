@@ -3,15 +3,21 @@
 
 #include <armadillo>
 
+#include "gridsCore.hpp"
+
 namespace grids
 {
 
-arma::vec
-extractSpikePos(const arma::vec& spikePosIdx, const arma::vec& posData, double dt);
 
-arma::Mat<double>*
-SNSpatialRate2D(const arma::vec& spikeTimes, const arma::vec& pos_x, const
-        arma::vec& pos_y, double dt, double arenaDiam, double h);
+/**
+ * Compute a spatial firing rate in a 2D environment.
+ */
+arma::mat*
+spatialRateMap(const arma::vec& spikeTimes,
+               const Position2D& pos,
+               const arma::vec& xedges, const arma::vec& yedges,
+               double sigma);
+
 
 } // namespace grids
 

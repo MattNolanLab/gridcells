@@ -11,7 +11,6 @@ Functions
 .. autosummary::
 
     gaussianFilter
-    extractSpikePositions2D
     SNSpatialRate2D
     SNAutoCorr
     cellGridnessScore
@@ -20,65 +19,11 @@ Functions
 import numpy    as np
 import numpy.ma as ma
 
-cimport numpy as np
-
-DTYPE = np.double
-ctypedef np.double_t DTYPE_t
-
-
 from scipy.integrate             import trapz
 from scipy.signal                import correlate2d
 from scipy.ndimage.interpolation import rotate
 
-
-cdef np.ndarray[DTYPE_t, ndim=1] gaussianFilter(np.ndarray[DTYPE_t, ndim=1] X,
-        double sigma):
-    '''Simple Gaussian filter.
-
-    Parameters
-    ----------
-    X : a numeric value or any sequence
-        The X parameter for the Gaussian
-    sigma : float
-        Standard deviation of the Gaussian
-
-    Returns
-    -------
-    type(X)
-        The value of the Gaussian filter for the input argument. The shape is the
-        same as `X`.
-    '''
-    return np.exp(-X/ 2.0 / sigma**2)
-
-
-
-def extractSpikePositions2D(spikeTimes, pos_x, pos_y, dt):
-    '''Extract positions of the animal for each spike.
-
-    Extract spike positions from the animal tracking data and neuron spike times.
-    Both animal positions positions and spikes must be *aligned in time*.
-
-    Parameters
-    ----------
-    spikeTimes : np.ndarray
-        A vector that contains spike times for the neuron.
-    pos_x, pos_y : np.ndarray
-        An array containing the animal/animat positional information. The
-        positions must be evenly spaced in time.
-    dt : float
-        Time step of the positional information in `pos_x` and `pos_y`.
-
-    Returns
-    -------
-    A tuple (npos_x, npos_y, max_index)
-        A tuple containing positional information and an index into the
-        positional data, of the last spike in `spikeTimes`.
-    '''
-    neuronPos_i = np.array(spikeTimes/dt, dtype=int)
-    neuronPos_x = pos_x[neuronPos_i]
-    neuronPos_y = pos_y[neuronPos_i]
-    return (neuronPos_x, neuronPos_y, np.max(neuronPos_i))
-
+from . import _fields, gridsCore
 
 
 def SNSpatialRate2D(spikeTimes, pos_x, pos_y, dt, arenaDiam, h):
@@ -113,33 +58,15 @@ def SNSpatialRate2D(spikeTimes, pos_x, pos_y, dt, arenaDiam, h):
         as `rateMap.shape[0]`.
     '''
     precision = arenaDiam/h
-    cdef np.ndarray[DTYPE_t, ndim=1] xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
-    cdef np.ndarray[DTYPE_t, ndim=1] yedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
+    xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
+    yedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
 
-    cdef int x_i, y_i
-    cdef np.ndarray[DTYPE_t, ndim=1] posDist2, neuronPosDist2, neuronPos_x, neuronPos_y
-
-    cdef np.ndarray[DTYPE_t, ndim=2] rateMap = \
-            np.zeros((len(xedges), len(yedges)), dtype=DTYPE)
-    neuronPos_x, neuronPos_y, _ = extractSpikePositions2D(spikeTimes, pos_x, pos_y, dt)
-
-    for x_i in range(xedges.shape[0]):
-        for y_i in range(yedges.shape[0]):
-            x = xedges[x_i]
-            y = yedges[y_i]
-            posDist2 = (pos_x - x)**2 + (pos_y - y)**2
-            neuronPosDist2 = (neuronPos_x - x)**2 + (neuronPos_y - y)**2
-            isNearTrack = np.count_nonzero(np.sqrt(posDist2) <= h) > 0
-
-            if isNearTrack:
-                normConst = trapz(np.exp(-posDist2/ 2.0 / h**2), dx=dt)
-                spikes = np.sum(gaussianFilter(neuronPosDist2, sigma=h))
-                rateMap[x_i, y_i] = spikes/normConst
-
+    pos = gridsCore.Position2D(pos_x, pos_y, dt)
+    rateMap = _fields.spatialRateMap(spikeTimes, pos, xedges, yedges, h)
     # Mask values which are outside the arena
     X, Y = np.meshgrid(xedges, yedges)
-    rateMap = ma.masked_array(rateMap, mask = np.sqrt(X**2 + Y**2) > arenaDiam/2.0)
-
+    rateMap = np.ma.MaskedArray(rateMap, mask=np.sqrt(X**2 + Y**2) > arenaDiam/2.0,
+                       copy=False)
     return  rateMap.T, xedges, yedges
 
 

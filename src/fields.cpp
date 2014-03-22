@@ -1,33 +1,51 @@
+
 #include "fields.hpp"
 
+using arma::vec;
+using arma::mat;
+using arma::uword;
 
 namespace grids
 {
 
-arma::vec
-extractSpikePos(const arma::vec& spikePosIdx, const arma::vec& posData, double dt)
+vec
+extractSpikePos(const vec& spikePosIdx, const vec& posData)
 {
-    arma::vec res(spikePosIdx.n_elem);
+    vec res(spikePosIdx.n_elem);
     for (int i = 0; i < spikePosIdx.n_elem; i++) {
+        if (i >= posData.n_elem) {
+            std::cerr << i << " >= " << posData.n_elem << std::endl;
+        }
         res(i) = posData(spikePosIdx(i));
     }
     return res;
 }
 
 
-arma::mat*
-SNSpatialRate2D(const arma::vec& spikeTimes, const arma::vec& pos_x, const
-        arma::vec& pos_y, double dt, double arenaDiam, double h)
+double trapz(const vec& f)
 {
-    double precision = arenaDiam / h;
-    arma::vec xedges = arma::linspace(-arenaDiam/2, arenaDiam/2, precision+1);
-    arma::vec yedges = arma::linspace(-arenaDiam/2, arenaDiam/2, precision+1);
+    double partialSum = 0;
+    uword sz = f.n_elem;
+    
+    if (sz > 2) {
+        partialSum = arma::sum(f.subvec(1, sz-2));
+    }
 
-    arma::mat* rateMap = new arma::mat(xedges.n_elem, yedges.n_elem);
+    return .5 * (f(0) + f(sz-1)) + partialSum;
+}
+
+
+mat*
+spatialRateMap(const vec& spikeTimes,
+               const Position2D& pos,
+               const vec& xedges, const vec& yedges,
+               double sigma)
+{
+    mat* rateMap = new mat(xedges.n_elem, yedges.n_elem);
     rateMap->zeros();
-    arma::vec spikePosIdx = spikeTimes / dt;
-    arma::vec neuronPos_x = extractSpikePos(spikePosIdx, pos_x, dt);
-    arma::vec neuronPos_y = extractSpikePos(spikePosIdx, pos_y, dt);
+    vec spikePosIdx = spikeTimes / pos.dt;
+    vec neuronPos_x = extractSpikePos(spikePosIdx, pos.x);
+    vec neuronPos_y = extractSpikePos(spikePosIdx, pos.y);
 
 
     int nIter = 0;
@@ -37,15 +55,14 @@ SNSpatialRate2D(const arma::vec& spikeTimes, const arma::vec& pos_x, const
             double x = xedges(x_i);
             double y = yedges(y_i);
 
-            arma::vec posDist2 = arma::square(pos_x - x) +
-                                 arma::square(pos_y - y);
-            bool isNearTrack = arma::accu(arma::sqrt(posDist2) <= h) > 0;
+            vec posDist2 = arma::square(pos.x - x) + arma::square(pos.y - y);
+            bool isNearTrack = arma::accu(arma::sqrt(posDist2) <= sigma) > 0;
 
             if (isNearTrack) {
-                double normConst = arma::sum(arma::exp(-posDist2 / 2. / (h*h))) * dt;
-                arma::vec neuronPosDist2 = arma::square(neuronPos_x - x) + 
+                double normConst = trapz(arma::exp(-posDist2 / 2. / (sigma*sigma))) * pos.dt;
+                vec neuronPosDist2 = arma::square(neuronPos_x - x) + 
                                      arma::square(neuronPos_y - y);
-                double spikes = arma::sum(exp( -neuronPosDist2 / 2. / (h*h)));
+                double spikes = arma::sum(exp( -neuronPosDist2 / 2. / (sigma*sigma)));
                 (*rateMap)(x_i, y_i) = spikes / normConst;
             }
 
@@ -53,6 +70,7 @@ SNSpatialRate2D(const arma::vec& spikeTimes, const arma::vec& pos_x, const
         }
     }
 
+    //rateMap->print();
     return rateMap;
 }
 

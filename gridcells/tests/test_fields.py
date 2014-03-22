@@ -11,18 +11,20 @@ A list of currently supported tests:
 '''
 import unittest
 import numpy as np
-from gridcells import fields, _cppfields
+from gridcells import fields
 import fields_ref_impl as refimp
 
 notImplMsg = "Not implemented"
 
 class TestRateFields(unittest.TestCase):
     '''Test the correctness of firing field analysis.'''
-    rtol = 1e-9
+    rtol = 1e-3
 
     def setUp(self):
         self.refData = None
         self.refRateMap = None
+        self.refXedges = None
+        self.refYedges = None
 
     class InputData(object):
         def __init__(self, spikeTimes, pos_x, pos_y, pos_dt, arenaDiam, h):
@@ -54,21 +56,16 @@ class TestRateFields(unittest.TestCase):
         return self.refData, self.refRateMap, self.refXedges, self.refYedges
 
 
-    def test_PythonVersion(self):
+    def test_NaiveVersion(self):
         d, refRateMap, refXE, refYE = self.loadRealDataSample()
         theirRateMap, theirXE, theirYE = fields.SNSpatialRate2D(d.spikeTimes,
                 d.pos_x, d.pos_y, d.pos_dt, d.arenaDiam, d.h)
+        print(np.max(np.abs(theirRateMap - refRateMap)))
         np.testing.assert_allclose(theirRateMap, refRateMap, self.rtol)
         np.testing.assert_allclose(theirXE, refXE, self.rtol)
         np.testing.assert_allclose(theirYE, refYE, self.rtol)
 
 
-
     @unittest.skip(notImplMsg)
-    def test_CppVersion(self):
-        pass
-
-
-    @unittest.skip(notImplMsg)
-    def test_CppOptimisedVersion(self):
+    def test_OptimisedVersion(self):
         pass
