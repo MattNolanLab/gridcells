@@ -11,7 +11,8 @@ A list of currently supported tests:
 '''
 import unittest
 import numpy as np
-from gridcells import fields
+from gridcells import gridsCore, fields, arena
+from gridcells.gridsCore import Size2D
 import fields_ref_impl as refimp
 
 notImplMsg = "Not implemented"
@@ -19,6 +20,8 @@ notImplMsg = "Not implemented"
 class TestRateFields(unittest.TestCase):
     '''Test the correctness of firing field analysis.'''
     rtol = 1e-3
+    arenaR = 90. # cm
+    sigma  = 3.  # cm
 
     def setUp(self):
         self.refData = None
@@ -57,13 +60,19 @@ class TestRateFields(unittest.TestCase):
 
 
     def test_NaiveVersion(self):
+        # Reference
         d, refRateMap, refXE, refYE = self.loadRealDataSample()
-        theirRateMap, theirXE, theirYE = fields.SNSpatialRate2D(d.spikeTimes,
-                d.pos_x, d.pos_y, d.pos_dt, d.arenaDiam, d.h)
+
+        # Tested code
+        ar = arena.CircularArena(self.arenaR, Size2D(self.sigma, self.sigma))
+        pos = gridsCore.Position2D(d.pos_x, d.pos_y, d.pos_dt)
+        theirRateMap = fields.SNSpatialRate2D(d.spikeTimes, pos, ar,
+                self.sigma)
+        theirEdges = ar.getDiscretisation().edges()
         print(np.max(np.abs(theirRateMap - refRateMap)))
         np.testing.assert_allclose(theirRateMap, refRateMap, self.rtol)
-        np.testing.assert_allclose(theirXE, refXE, self.rtol)
-        np.testing.assert_allclose(theirYE, refYE, self.rtol)
+        np.testing.assert_allclose(theirEdges.x, refXE, self.rtol)
+        np.testing.assert_allclose(theirEdges.y, refYE, self.rtol)
 
 
     @unittest.skip(notImplMsg)

@@ -30,14 +30,14 @@ struct XYPair
 
 
 typedef XYPair<arma::vec> VecPair; ///< A pair of armadillo vectors.
-typedef XYPair<unsigned> Size2D;   ///< A pair specifying a 2D size.
+typedef XYPair<double> Size2D;   ///< A pair specifying a 2D size.
 
 
 
 /* Necessary for correct SWIG processing. Do not remove. */
 #ifdef SWIG
     %template(VecPair) XYPair<arma::vec>;
-    %template(Size2D) XYPair<unsigned>;
+    %template(Size2D) XYPair<double>;
 #endif //SWIG
 
 

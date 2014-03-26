@@ -8,5 +8,6 @@
 
 %include "armanpy.i"
 %include "gridsCore.i"
+%include "arena.i"
 
 %include "fields.hpp"

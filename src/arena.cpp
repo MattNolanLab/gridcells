@@ -4,7 +4,7 @@
 namespace grids 
 {
 
-Discretisation2D::Discretisation2D(const Size2D& sz, const XYPair<unsigned> q) :
+Discretisation2D::Discretisation2D(const Size2D& sz, const XYPair<double> q) :
         size(sz), q(q),
         _nx(size.x / q.x + 1),
         _ny(size.y / q.y + 1),

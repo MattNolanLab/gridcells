@@ -84,6 +84,8 @@ copy_python_so(fields)
 copy_python_so(gridsCore)
 copy_python_so(arena)
 
+copy_python_wrapper_mod(arena)
+
 
 install (TARGETS gridcells DESTINATION lib)
 install (TARGETS _fields DESTINATION ${PROJECT_SOURCE_DIR}/gridcells)

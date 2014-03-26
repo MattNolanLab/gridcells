@@ -16,7 +16,7 @@ namespace grids {
 class Discretisation2D
 {
     const Size2D size;        ///< Size of the discretised object
-    const XYPair<unsigned> q; ///< Discretisation interval, i.e. dx/dy
+    const XYPair<double> q; ///< Discretisation interval, i.e. dx/dy
     unsigned _nx;             ///< Number of items in X direction
     unsigned _ny;             ///< Number of items in Y direction
     VecPair _edges;           ///< Edges, i.e. discretisation
@@ -29,12 +29,12 @@ class Discretisation2D
      * @param sz Size of the arena.
      * @param q  Quantisation 
      */
-    Discretisation2D(const Size2D& sz, const XYPair<unsigned> q);
+    Discretisation2D(const Size2D& sz, const XYPair<double> q);
 
     const VecPair& edges() const { return _edges; };
 
     const Size2D& getSize() const { return size; };
-    const XYPair<unsigned> getQ() const { return q; };
+    const XYPair<double> getQ() const { return q; };
     const size_t nX() const { return _nx; };
     const size_t nY() const { return _ny; };
 };
@@ -85,7 +85,7 @@ class RectangularArena : public Arena
      * @param sz Size of the arena.
      * @param q  Quantisation step, i.e. dx and dy.
      */
-    RectangularArena(const Size2D& sz, const XYPair<unsigned>& q) :
+    RectangularArena(const Size2D& sz, const XYPair<double>& q) :
         size(sz), discret(Discretisation2D(sz, q)),
         mask(arma::umat(discret.nX(), discret.nY()).fill(false))
     {}
@@ -108,7 +108,7 @@ class RectangularArena : public Arena
 class SquareArena : public RectangularArena
 {
   public:
-    SquareArena(size_t sz, const XYPair<unsigned>& q) :
+    SquareArena(double sz, const XYPair<double>& q) :
         RectangularArena(Size2D(sz, sz), q) {}
 };
 
@@ -133,7 +133,7 @@ class CircularArena : public SquareArena
      * @param r Radius
      * @param q Quantisation step, i.e. dx/dy
      */
-    CircularArena(double r, const XYPair<unsigned>& q) :
+    CircularArena(double r, const XYPair<double>& q) :
         SquareArena(r * 2., q), r(r) 
     {
         arma::mat X = arma::repmat(discret.edges().x.t(), discret.nY(),            1);

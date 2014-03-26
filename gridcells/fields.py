@@ -10,7 +10,6 @@ Functions
 ---------
 .. autosummary::
 
-    gaussianFilter
     SNSpatialRate2D
     SNAutoCorr
     cellGridnessScore
@@ -26,7 +25,7 @@ from scipy.ndimage.interpolation import rotate
 from . import _fields, gridsCore
 
 
-def SNSpatialRate2D(spikeTimes, pos_x, pos_y, dt, arenaDiam, h):
+def SNSpatialRate2D(spikeTimes, positions, arena, sigma):
     '''Compute spatial rate map for spikes of a given neuron.
 
     Preprocess neuron spike times into a smoothed spatial rate map, given arena
@@ -57,17 +56,10 @@ def SNSpatialRate2D(spikeTimes, pos_x, pos_y, dt, arenaDiam, h):
         Values of the spatial lags for the correlation function. The same shape
         as `rateMap.shape[0]`.
     '''
-    precision = arenaDiam/h
-    xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
-    yedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
-
-    pos = gridsCore.Position2D(pos_x, pos_y, dt)
-    rateMap = _fields.spatialRateMap(spikeTimes, pos, xedges, yedges, h)
+    rateMap = _fields.spatialRateMap(spikeTimes, positions, arena, sigma)
     # Mask values which are outside the arena
-    X, Y = np.meshgrid(xedges, yedges)
-    rateMap = np.ma.MaskedArray(rateMap, mask=np.sqrt(X**2 + Y**2) > arenaDiam/2.0,
-                       copy=False)
-    return  rateMap.T, xedges, yedges
+    rateMap = np.ma.MaskedArray(rateMap, mask=arena.getMask(), copy=False)
+    return  rateMap.T
 
 
 
