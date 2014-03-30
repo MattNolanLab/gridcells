@@ -7,7 +7,7 @@
 %}
 
 %include "armanpy.i"
-%include "gridsCore.i"
-%include "arena.i"
+%import "gridsCore.i"
+%import "arena.i"
 
 %include "fields.hpp"
