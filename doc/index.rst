@@ -3,20 +3,24 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to the Grid cells package documentation!
-==============================================
+.. module:: gridcells
 
-Contents:
+gridcells -- a package for processing of grid cell data
+=======================================================
 
 .. toctree::
    :maxdepth: 2
 
-   modules/index.rst
+   src/overview/index.rst
+   src/modules/index.rst
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+
+..
+    Indices and tables
+    ==================
+    
+    * :ref:`genindex`
+    * :ref:`modindex`
+    * :ref:`search`
 

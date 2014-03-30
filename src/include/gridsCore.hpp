@@ -4,6 +4,7 @@
 
 #include <armadillo>
 
+/** Namespace for the Grid cell library */
 namespace grids
 {
 
@@ -45,8 +46,9 @@ typedef XYPair<double> Size2D;   ///< A pair specifying a 2D size.
 /**
  * Specifies positional information with a constant time step.
  */
-struct Position2D : public VecPair
+class Position2D : public VecPair
 {
+  public:
     const double dt; ///< Positional time step. Arbitrary units.
 
     /**

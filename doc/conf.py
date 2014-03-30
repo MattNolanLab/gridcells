@@ -19,6 +19,8 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../external/breathe'))
+sys.path.insert(0, os.path.abspath('../external/numpydoc'))
 
 # -- General configuration ------------------------------------------------
 
@@ -32,11 +34,17 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
+    'sphinx.ext.pngmath',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
     'numpydoc',
+    'breathe',
 ]
+
+# Breathe projects
+breathe_projects = {"GridCells" : os.path.abspath('./doxygenOutput/xml')}
+breathe_default_project = "GridCells"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -51,7 +59,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Grid cells package'
+project = u'gridcells'
 copyright = u'2014, Lukas Solanka'
 
 # The version info for the project you're documenting, acts as replacement for
