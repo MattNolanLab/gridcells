@@ -66,10 +66,9 @@ class TestRateFields(unittest.TestCase):
         # Tested code
         ar = arena.CircularArena(self.arenaR, Size2D(self.sigma, self.sigma))
         pos = gridsCore.Position2D(d.pos_x, d.pos_y, d.pos_dt)
-        theirRateMap = fields.SNSpatialRate2D(d.spikeTimes, pos, ar,
-                self.sigma)
+        theirRateMap = fields.spatialRateMap(d.spikeTimes, pos, ar, self.sigma)
         theirEdges = ar.getDiscretisation().edges()
-        print(np.max(np.abs(theirRateMap - refRateMap)))
+        #print(np.max(np.abs(theirRateMap - refRateMap)))
         np.testing.assert_allclose(theirRateMap, refRateMap, self.rtol)
         np.testing.assert_allclose(theirEdges.x, refXE, self.rtol)
         np.testing.assert_allclose(theirEdges.y, refYE, self.rtol)

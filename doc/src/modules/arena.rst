@@ -20,6 +20,9 @@ These types of arenas are currently defined:
   4. :cpp:class:`~grids::CircularArena` to define circular arenas,
      parameterized by their radius. Any data outside the radius are invalid.
 
+As well, an arena returns a discretisation, an object of class
+``Discretisation2D`` that defines the discretised positions in it.
+
 
 C++/SWIG API reference
 ----------------------
@@ -37,4 +40,8 @@ array) classes are mapped directly to numpy.ndarray.
 .. doxygenclass:: grids::SquareArena
     :members:
 
+.. doxygenclass:: grids::CircularArena
+    :members:
 
+.. doxygenclass:: grids::Discretisation2D
+    :members:

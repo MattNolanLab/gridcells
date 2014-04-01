@@ -124,7 +124,7 @@ class SquareArena : public RectangularArena
 class CircularArena : public SquareArena
 {
   private:
-    double r;
+    double r; ///< Arena radius
 
   public:
     /**

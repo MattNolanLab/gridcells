@@ -1,3 +1,9 @@
+/** @file fields.hpp
+ *
+ * Grid field / autocorrelation / other calculations.
+ *
+ */
+
 #ifndef FIELDS_HPP
 #define FIELDS_HPP
 
@@ -14,13 +20,12 @@ namespace grids
  * Compute a spatial firing rate of a neuron.
  *
  * @param spikeTimes A vector of spike times of the neuron. Units must be the
- *                   same as for pos.dt.
+ *          same as for pos.dt.
  * @param pos Positional data, i.e. where the subject was located at which
- *            time.
- * @param xedges Discretisation of the arena (X).
- * @param yedges Discretisation of the arena (Y).
+ *          time.
+ * @param arena Arena in which the experiment happened
  * @param sigma  Smoothing factor (i.e. std. dev. of the smoothing Gaussian
- *               function).
+ *          function).
  * @returns A 2D array containing the firing rate in time units specified by
  *          the user data.
  */

@@ -1,4 +1,3 @@
-# cython: profile=True
 '''
 .. currentmodule:: gridcells.fields
 
@@ -10,9 +9,9 @@ Functions
 ---------
 .. autosummary::
 
-    SNSpatialRate2D
-    SNAutoCorr
-    cellGridnessScore
+    spatialRateMap
+    spatialAutoCorrelation
+    gridnessScore
 
 '''
 import numpy    as np
@@ -25,7 +24,7 @@ from scipy.ndimage.interpolation import rotate
 from . import _fields, gridsCore
 
 
-def SNSpatialRate2D(spikeTimes, positions, arena, sigma):
+def spatialRateMap(spikeTimes, positions, arena, sigma):
     '''Compute spatial rate map for spikes of a given neuron.
 
     Preprocess neuron spike times into a smoothed spatial rate map, given arena
@@ -36,25 +35,19 @@ def SNSpatialRate2D(spikeTimes, positions, arena, sigma):
     ----------
     spikeTimes : np.ndarray
         Spike times for a given neuron.
-    pos_x, pos_y : np.ndarray
-        Vectors of positional data of where the animal was located.
-    dt : float
-        Time step of the positional data. The units must be the same as for
-        `spikeTimes`.
-    arenaDiam : float
-        Diameter of the arena. The result will be a masked array in which all
-        values outside the arena will be invalid.
-    h : float
+    positions : gridsCore.Position2D
+        Positional data for these spikes. The timing must be aligned with
+        ``spikeTimes``
+    arena : arena.Arena
+        The specification of the arena in which movement was carried out.
+    sigma : float
         Standard deviation of the Gaussian smoothing kernel.
 
     Returns
     -------
     rateMap : np.ndarray
-        The 2D spatial firing rate map. The shape will be `(arenaDiam/h + 1,
-        arenaDiam/h + 1)`.
-    xedges, yedges : np.ndarray
-        Values of the spatial lags for the correlation function. The same shape
-        as `rateMap.shape[0]`.
+        The 2D spatial firing rate map. The shape will be determined by the
+        arena type.
     '''
     rateMap = _fields.spatialRateMap(spikeTimes, positions, arena, sigma)
     # Mask values which are outside the arena
@@ -63,13 +56,13 @@ def SNSpatialRate2D(spikeTimes, positions, arena, sigma):
 
 
 
-def SNAutoCorr(rateMap, arenaDiam, h):
+def spatialAutoCorrelation(rateMap, arenaDiam, h):
     '''Compute autocorrelation function of the spatial firing rate map.
 
     This function assumes that the arena is a circle and masks all values of
     the autocorrelation that are outside the `arenaDiam`.
 
-    .. todo::
+    .. warning::
 
         This function will undergo serious interface changes in the future.
 
@@ -102,59 +95,7 @@ def SNAutoCorr(rateMap, arenaDiam, h):
     return corr, xedges, yedges
 
 
-#def SNFiringRate(spikeTimes, tend, dt, winLen):
-#    '''
-#    Compute a windowed firing rate from action potential times
-#    spikeTimes  Spike timestamps (should be ordered)
-#    dt          Sliding window step (s)
-#    winLen      Sliding windown length (s)
-#    '''
-#    szRate = int((tend)/dt)+1
-#    r = np.ndarray((szRate, ))
-#    times = np.ndarray(szRate)
-#    for t_i in xrange(szRate):
-#        t = t_i*dt
-#        r[t_i] = np.sum(np.logical_and(spikeTimes > t-winLen/2, spikeTimes <
-#            t+winLen/2))
-#        times[t_i] = t
-#
-#    return (r/winLen, times)
-
-
-
-#def motionDirection(pos_x, pos_y, pos_dt, tend, winLen):
-#    '''
-#    Estimate the direction of motion as an average angle of the
-#    directional vector in the windown of winLen.
-#    pos_x, pos_y    Tracking data
-#    pos_dt          Sampling rate of tracking data
-#    tend            End time to consider
-#    winLen          Window length (s)
-#    '''
-#    sz = int(tend/pos_dt) + 1
-#    angles = np.ndarray(sz)
-#    avg_spd = np.ndarray(sz)
-#    times = np.ndarray(sz)
-#
-#    vel_x = np.diff(pos_x) / pos_dt
-#    vel_y = np.diff(pos_y) / pos_dt
-#
-#    for t_i in xrange(sz):
-#        times[t_i] = t_i*pos_dt
-#        if t_i < len(vel_x):
-#            vel_x_win = np.mean(vel_x[t_i:t_i+winLen/pos_dt])
-#            vel_y_win = np.mean(vel_y[t_i:t_i+winLen/pos_dt])
-#            angles[t_i] = np.arctan2(vel_y_win, vel_x_win)
-#            avg_spd[t_i] = np.sqrt(vel_x_win**2 + vel_y_win**2)
-#        else:
-#            angles[t_i] = 0.0
-#            avg_spd[t_i] = 0.0
-#
-#    return angles, times, avg_spd
-
-
-
-def cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
+def gridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
     '''Calculate gridness score of a spatial firing rate map.
 
     Parameters

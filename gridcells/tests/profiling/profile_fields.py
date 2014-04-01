@@ -1,12 +1,8 @@
-# cython: profile=True
 '''Profiling of the grid field analysis module.'''
 import cProfile
 import numpy as np
 
-from gridcells import fields
-
-N = 40
-field = np.random.rand(40, 40)
+from gridcells import gridsCore, arena, fields
 
 dataDir = "data"
 spikeTimes = np.loadtxt("%s/spikeTimes.txt" % dataDir)
@@ -16,5 +12,7 @@ dt         = 20
 arenaDiam  = 180.0
 h          = 3
 
-cProfile.run('fields.SNSpatialRate2D(spikeTimes, pos_x, pos_y, dt, arenaDiam, h)',
+ar = arena.CircularArena(arenaDiam / 2., gridsCore.Size2D(h, h))
+positions = gridsCore.Position2D(pos_x, pos_y, dt)
+cProfile.run('fields.spatialRateMap(spikeTimes, positions, ar, h)',
         sort='tottime')

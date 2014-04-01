@@ -13,6 +13,7 @@ gridcells -- a package for processing of grid cell data
 
    src/overview/index.rst
    src/modules/index.rst
+   src/todo.rst
 
 
 

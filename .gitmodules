@@ -4,3 +4,6 @@
 [submodule "external/numpydoc"]
 	path = external/numpydoc
 	url = https://github.com/numpy/numpydoc.git
+[submodule "external/sphinx_rtd_theme"]
+	path = external/sphinx_rtd_theme
+	url = https://github.com/snide/sphinx_rtd_theme.git
