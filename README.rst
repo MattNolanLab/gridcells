@@ -1,5 +1,5 @@
-Overview
-========
+GridCells
+=========
 
 What are grid cells
 -------------------
@@ -11,10 +11,10 @@ they are active form a hexagonal lattice. More information can be found in
 [MOSER2007]_ or in [HAFTING2005]_.
 
 
-What does :mod:`gridcells` do
+What does `gridcells` do
 -----------------------------
 
-:mod:`gridcells` is a simple C++/Python library that aims to provide an open
+`gridcells` is a simple C++/Python library that aims to provide an open
 source code repository related to analysis and simulations of grid cell models.
 
 
@@ -22,7 +22,7 @@ source code repository related to analysis and simulations of grid cell models.
 Download
 --------
 
-:mod:`gridcells` can be downloaded from bitbucket at
+`gridcells` can be downloaded from bitbucket at
 https://bitbucket.org/lsolanka/gridanalysis.
 
 
@@ -75,7 +75,7 @@ set your ``PYTHONPATH`` appropriately. Otherwise, follow all the steps.
 License
 -------
 
-:mod:``gridcells`` is distributed under the GPL license. See LICENSE.txt in the
+`gridcells` is distributed under the GPL license. See LICENSE.txt in the
 root of the source directory.
 
 
