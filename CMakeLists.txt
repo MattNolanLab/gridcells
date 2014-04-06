@@ -22,8 +22,12 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-set(GRIDCELLS_VERSION_MAJOR 0)
-set(GRIDCELLS_VERSION_MINOR 1)
+set(gridcells_VERSION_MAJOR 0)
+set(gridcells_VERSION_MINOR 1)
+set(gridcells_VERSION_PATCH 0)
+set(gridcells_VERSION
+    "${gridcells_VERSION_MAJOR}.${gridcells_VERSION_MINOR}.${gridcells_VERSION_PATCH}"
+)
 
 set (ARMANPY_DIR "${PROJECT_SOURCE_DIR}/external/armanpy")
 
@@ -43,18 +47,32 @@ include( ${SWIG_USE_FILE} )
 message( STATUS "SWIG ${SWIG_VERSION}" )
 message( STATUS "  Executable: ${SWIG_EXECUTABLE}" )
 
-
-# Python stuff
+# Python modules dependencies
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibrary REQUIRED)
-message (STATUS "Python ${PYTHON_VERSION_STRING}")
-message (STATUS "  Include: ${PYTHON_INCLUDE_DIRS}")
-message (STATUS "  Library: ${PYTHON_LIBRARIES}")
-message (STATUS "  Executable: ${PYTHON_EXECUTABLE}")
+message(STATUS "Python ${PYTHON_VERSION_STRING}")
+message(STATUS "  Include: ${PYTHON_INCLUDE_DIRS}")
+message(STATUS "  Library: ${PYTHON_LIBRARIES}")
+message(STATUS "  Executable: ${PYTHON_EXECUTABLE}")
 find_package(Numpy REQUIRED)
-message (STATUS "Numpy ${NUMPY_VERSION_STRING}")
-message (STATUS "  Version: ${NUMPY_VERSION_STRING}")
-message (STATUS "  Include: ${NUMPY_INCLUDE_DIRS}")
+message(STATUS "Numpy ${NUMPY_VERSION_STRING}")
+message(STATUS "  Version: ${NUMPY_VERSION_STRING}")
+message(STATUS "  Include: ${NUMPY_INCLUDE_DIRS}")
+
+# Python module installation settings
+message(STATUS "Python modules:")
+if (NOT DEFINED PYTHON_MODS_INSTALL_PREFIX)
+    set(PYTHON_MODS_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+endif()
+if ((${PYTHON_SETUP_ARGUMENTS} MATCHES "^--user$") OR
+    (${PYTHON_SETUP_ARGUMENTS} MATCHES "[ ]+--user[ ]+") OR
+    (${PYTHON_SETUP_ARGUMENTS} MATCHES "^--user[ ]+") OR
+    (${PYTHON_SETUP_ARGUMENTS} MATCHES "[ ]+--user$"))
+    set(PYTHON_MODS_INSTALL_PREFIX "")
+    message(STATUS "  Installation directory: --user")
+else()
+    message(STATUS "  Installation directory: ${PYTHON_MODS_INSTALL_PREFIX}")
+endif()
 
 
 set (ARMANPY_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/external/armanpy/include")
@@ -71,4 +89,14 @@ include_directories(
     ${ARMANPY_INCLUDE_DIR}
 )
 
+configure_file("setup.py.in" ${CMAKE_SOURCE_DIR}/setup.py)
+configure_file("setup.cfg.in" ${CMAKE_SOURCE_DIR}/setup.cfg)
+
 add_subdirectory(src)
+
+set(python_install_code
+    "execute_process(COMMAND
+        ${PYTHON_EXECUTABLE} setup.py install ${PYTHON_SETUP_ARGUMENTS}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})"
+) 
+install(CODE ${python_install_code})

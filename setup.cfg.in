@@ -1,0 +1,5 @@
+[build]
+build_base=_python_build
+
+[install]
+prefix=@PYTHON_MODS_INSTALL_PREFIX@

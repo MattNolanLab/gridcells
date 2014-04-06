@@ -88,4 +88,6 @@ copy_python_wrapper_mod(arena)
 
 
 install (TARGETS gridcells DESTINATION lib)
-install (TARGETS _fields DESTINATION ${PROJECT_SOURCE_DIR}/gridcells)
+install (TARGETS _gridsCore DESTINATION ${PROJECT_SOURCE_DIR}/gridcells)
+install (TARGETS _arena     DESTINATION ${PROJECT_SOURCE_DIR}/gridcells)
+install (TARGETS _fields    DESTINATION ${PROJECT_SOURCE_DIR}/gridcells)
