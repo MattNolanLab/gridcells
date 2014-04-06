@@ -75,7 +75,7 @@ set your ``PYTHONPATH`` appropriately. Otherwise, follow all the steps.
 License
 -------
 
-:mod:``gridcells`` is distributed under the GPL license. See LICENSE.txt in the
+:mod:`gridcells` is distributed under the GPL license. See LICENSE.txt in the
 root of the source directory.
 
 
