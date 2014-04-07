@@ -42,7 +42,11 @@ message( STATUS "    IncDirs: ${ARMADILLO_INCLUDE_DIR}" )
 
 
 # Swig
-find_package(SWIG REQUIRED)
+find_package(SWIG 2.0 REQUIRED)
+if (${SWIG_VERSION} VERSION_LESS "2.0")
+    message(FATAL_ERROR
+        "SWIG version must be >= 2.0. Found version ${SWIG_VERSION}")
+endif()
 include( ${SWIG_USE_FILE} )
 message( STATUS "SWIG ${SWIG_VERSION}" )
 message( STATUS "  Executable: ${SWIG_EXECUTABLE}" )
