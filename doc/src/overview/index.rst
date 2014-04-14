@@ -66,7 +66,10 @@ set your ``PYTHONPATH`` appropriately. Otherwise, follow all the steps.
     3. Run ``make``. This will compile all the C++ files and copy the SWIG
        generated python modules into the original source.
 
-    4. Run ``sudo make install``.
+    4. Run ``sudo make install`` or just ``make install`` if you are installing
+       to a user-defined directory. Once you have run this command you cannot
+       use :mod:`gridcells` from the source directory (you must use the
+       installed version).
 
     5. Optionally run tests in the ``gridcells/tests`` directory by running
        ``python -m unittest discover``.
