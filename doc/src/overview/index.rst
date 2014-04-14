@@ -23,7 +23,7 @@ Download
 --------
 
 :mod:`gridcells` can be downloaded from bitbucket at
-https://bitbucket.org/lsolanka/gridanalysis.
+https://bitbucket.org/lsolanka/gridcells.
 
 
 Dependencies
@@ -56,9 +56,12 @@ set your ``PYTHONPATH`` appropriately. Otherwise, follow all the steps.
     1. In the root directory, create the ``build`` directory and enter it.
 
     2. Run cmake. Currently the armadillo path has to be specified explicitly,
-       i.e. ``cmake .. -DARMADILLO_INCLUDE_DIR=<path_to_armadillo>``. Replace
-       ``<path_to_armadillo>`` with the appropriate directory containing the
-       header files (for instance ``/usr/local/include``).
+       i.e.::
+      
+            cmake .. -DARMADILLO_INCLUDE_DIR=<path_to_armadillo>
+           
+       Replace ``<path_to_armadillo>`` with the appropriate directory
+       containing the header files (for instance ``/usr/local/include``).
 
        In case you do not want to install system-wide, set the prefix parameter
        when running cmake: ``-DCMAKE_INSTALL_PREFIX=<install_path>``.
