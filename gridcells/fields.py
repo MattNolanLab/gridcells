@@ -23,7 +23,8 @@ from scipy.integrate             import trapz
 from scipy.signal                import correlate2d
 from scipy.ndimage.interpolation import rotate
 
-from . import _fields, gridsCore
+from . import _fields
+from .core import Pair2D
 
 
 def spatialRateMap(spikeTimes, positions, arena, sigma):
@@ -37,10 +38,10 @@ def spatialRateMap(spikeTimes, positions, arena, sigma):
     ----------
     spikeTimes : np.ndarray
         Spike times for a given neuron.
-    positions : gridsCore.Position2D
+    positions : gridcells.core.Position2D
         Positional data for these spikes. The timing must be aligned with
         ``spikeTimes``
-    arena : arena.Arena
+    arena : gridcells.core.Arena
         The specification of the arena in which movement was carried out.
     sigma : float
         Standard deviation of the Gaussian smoothing kernel.
@@ -51,7 +52,11 @@ def spatialRateMap(spikeTimes, positions, arena, sigma):
         The 2D spatial firing rate map. The shape will be determined by the
         arena type.
     '''
-    rateMap = _fields.spatialRateMap(spikeTimes, positions, arena, sigma)
+    edges = arena.getDiscretisation()
+    rateMap = _fields.spatialRateMap(spikeTimes,
+                                     positions.x, positions.y, positions.dt, 
+                                     edges.x, edges.y,
+                                     sigma)
     # Mask values which are outside the arena
     rateMap = np.ma.MaskedArray(rateMap, mask=arena.getMask(), copy=False)
     return  rateMap.T
@@ -165,7 +170,7 @@ def gridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
 
 def extractSpikePositions(spikeTimes, positions):
     spikeIdx = spikeTimes // positions.dt
-    return (gridsCore.VecPair(positions.x[spikeIdx], positions.y[spikeIdx]),
-           np.max(spikeIdx))
+    return (Pair2D(positions.x[spikeIdx], positions.y[spikeIdx]),
+            np.max(spikeIdx))
 
 
