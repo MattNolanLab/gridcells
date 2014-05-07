@@ -14,6 +14,8 @@ Functions
     gridnessScore
 
 '''
+from __future__ import absolute_import, division, print_function
+
 import numpy    as np
 import numpy.ma as ma
 
@@ -160,5 +162,10 @@ def gridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
 
     return G, np.array(crossCorr), angles
 
+
+def extractSpikePositions(spikeTimes, positions):
+    spikeIdx = spikeTimes // positions.dt
+    return (gridsCore.VecPair(positions.x[spikeIdx], positions.y[spikeIdx]),
+           np.max(spikeIdx))
 
 

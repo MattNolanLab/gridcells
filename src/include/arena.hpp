@@ -99,6 +99,8 @@ class RectangularArena : public Arena
 
     /** Obtain the mask for this arena **/
     const arma::umat& getMask() const { return mask; };
+
+    const Size2D& getSize() const { return size; };
 };
 
 

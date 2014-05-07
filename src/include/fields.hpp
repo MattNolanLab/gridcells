@@ -35,6 +35,9 @@ spatialRateMap(const arma::vec& spikeTimes,
                const Arena& arena,
                double sigma);
 
+arma::vec
+extractSpikePos(const arma::vec& spikePosIdx,
+                const arma::vec& posData);
 
 } // namespace grids
 
