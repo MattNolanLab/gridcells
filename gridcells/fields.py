@@ -52,6 +52,7 @@ def spatialRateMap(spikeTimes, positions, arena, sigma):
         The 2D spatial firing rate map. The shape will be determined by the
         arena type.
     '''
+    spikeTimes = np.asarray(spikeTimes, dtype=np.double)
     edges = arena.getDiscretisation()
     rateMap = _fields.spatialRateMap(spikeTimes,
                                      positions.x, positions.y, positions.dt, 

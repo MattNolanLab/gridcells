@@ -56,6 +56,8 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
                 neuronPos_x, neuronPos_y, m_i = extractSpikePositions2D(spikeTimes, rat_pos_x, rat_pos_y, dt)
                 spikes = np.sum(gaussianFilter(np.sqrt((neuronPos_x - x)**2 + (neuronPos_y - y)**2), sigma=h))
                 rateMap[x_i, y_i] = spikes/normConst
+            else:
+                rateMap[x_i, y_i] = np.nan
 
     # Mask values which are outside the arena
     X, Y = np.meshgrid(xedges, yedges)
