@@ -48,7 +48,7 @@ def spatialRateMap(spikeTimes, positions, arena, sigma):
 
     Returns
     -------
-    rateMap : np.ndarray
+    rateMap : np.ma.MaskedArray
         The 2D spatial firing rate map. The shape will be determined by the
         arena type.
     '''
