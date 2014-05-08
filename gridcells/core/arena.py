@@ -71,6 +71,8 @@ class RectangularArena(Arena):
     def getMask(self):
         return None
 
+    def getSize(self):
+        return self._sz
 
 
 class SquareArena(RectangularArena):
