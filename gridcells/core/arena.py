@@ -68,6 +68,9 @@ class RectangularArena(Arena):
         yedges = np.linspace(-self._sz.y/2., self._sz.y/2., numY)
         return Pair2D(xedges, yedges)
 
+    def getDiscretisationSteps(self):
+        return self._q
+
     def getMask(self):
         return None
 

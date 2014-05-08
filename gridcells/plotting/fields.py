@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 import numpy.ma as ma
+import numpy.fft
 
 from ..fields import extractSpikePositions
 from .low_level import xScaleBar
@@ -19,6 +20,49 @@ def gridScaleBar(scaleLen, scaleText, ax):
         xScaleBar(scaleLen, x=0.7, y=-0.00, ax=ax, height=0.015,
                 unitsText=unitsText, size='small')
 
+
+def plot2DFFT(rateMap, arena, ax, titleStr="", scaleBar=None, scaleText=True,
+              **kwargs):
+    FFTN = kwargs.pop('FFTN', np.max(rateMap.shape)) 
+    subtractmean = kwargs.pop('subtractmean', True)
+
+    rateMap = np.copy(rateMap)
+    rateMap[np.isnan(rateMap)] = 0
+    if subtractmean:
+        rateMap -= np.mean(rateMap)
+
+    ds = arena.getDiscretisationSteps()
+    FsX = 1. / ds.x # units: specified by caller
+    FsY = 1. / ds.y
+
+    rateMap_pad = np.zeros((FFTN, FFTN))
+    rateMap_pad[0:rateMap.shape[0], 0:rateMap.shape[0]] = rateMap
+    FT = np.fft.fft2(rateMap_pad)
+
+    fxy = np.linspace(-1.0, 1.0, FFTN)
+    FX, FY = np.meshgrid(fxy, fxy)
+    FX *= FsX/2.0
+    FY *= FsY/2.0
+
+    PSD_centered = np.abs(np.fft.fftshift(FT))**2
+    ax.pcolormesh(FX, FY, PSD_centered)
+    ax.axis('scaled')
+    ax.axis('off')
+
+
+
+
+#def plotAutoCorrelation(ac, X, Y, diam, ax, titleStr="",
+#        scaleBar=None, scaleText=True, **kw):
+#    ac = ma.masked_array(ac, mask = np.sqrt(X**2 + Y**2) > diam)
+#    ax.pcolormesh(X, Y, ac, **kw)
+#    ax.axis('scaled')
+#    ax.axis('off')
+#    ax.set_title(titleStr, va='bottom')
+#    if (diam != np.inf):
+#        ax.set_xlim([-lim_factor*diam, lim_factor*diam])
+#        ax.set_ylim([-lim_factor*diam, lim_factor*diam])
+#    gridScaleBar(scaleBar, scaleText, ax)
 
 
 def plotSpikes2D(spikeTimes, pos, arena, ax, titleStr='',
@@ -92,16 +136,3 @@ def plotSpatialRateMap(rateMap, arena, ax, titleStr="", scaleBar=None,
 
 
  
-#def plotAutoCorrelation(ac, X, Y, diam, ax, titleStr="",
-#        scaleBar=None, scaleText=True, **kw):
-#    ac = ma.masked_array(ac, mask = np.sqrt(X**2 + Y**2) > diam)
-#    ax.pcolormesh(X, Y, ac, **kw)
-#    ax.axis('scaled')
-#    ax.axis('off')
-#    ax.set_title(titleStr, va='bottom')
-#    if (diam != np.inf):
-#        ax.set_xlim([-lim_factor*diam, lim_factor*diam])
-#        ax.set_ylim([-lim_factor*diam, lim_factor*diam])
-#    gridScaleBar(scaleBar, scaleText, ax)
-
-
