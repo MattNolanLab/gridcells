@@ -52,6 +52,10 @@ todo_include_todos = True
 breathe_projects = {"GridCells" : os.path.abspath('./doxygenOutput/xml')}
 breathe_default_project = "GridCells"
 
+# Fix an issue with nonexistent documents:
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978
+numpydoc_show_class_members = False
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

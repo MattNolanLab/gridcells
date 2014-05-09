@@ -2,8 +2,6 @@
 SET(CMAKE_CXX_FLAGS "-Wall -O3 -g ${CMAKE_CXX_FLAGS}")
 
 add_library (gridcells SHARED
-    include/gridsCore.hpp
-    include/arena.hpp arena.cpp
     fields.cpp include/fields.hpp
 )
 
@@ -59,35 +57,22 @@ endmacro (COPY_PYTHON_WRAPPER_MOD)
 ##############################################################################
 
 set (PYMOD_SWIG_PROPS "-builtin;-O;-ignoremissing")
-set (PYMOD_SWIG_SOURCES "fields.i;gridsCore.i;arena.i")
+set (PYMOD_SWIG_SOURCES "fields.i")
 
 set_source_files_properties(${PYMOD_SWIG_SOURCES} PROPERTIES CPLUSPLUS ON)
 set_source_files_properties(${PYMOD_SWIG_SOURCES} PROPERTIES SWIG_FLAGS ${PYMOD_SWIG_PROPS})
 
 set (SWIG_MODULE_fields_EXTRA_DEPS
     "${COMMON_SWIG_DEPS}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/fields.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/gridsCore.hpp")
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/fields.hpp")
 
-set (SWIG_MODULE_gridsCore_EXTRA_DEPS
-    "${COMMON_SWIG_DEPS}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/gridsCore.hpp")
 
 swig_add_module (fields python fields.i)
-swig_add_module (gridsCore python gridsCore.i)
-swig_add_module (arena python arena.i)
 swig_link_libraries (fields gridcells ${PYTHON_LIBRARIES})
-swig_link_libraries (gridsCore gridcells ${PYTHON_LIBRARIES})
-swig_link_libraries (arena gridcells ${PYTHON_LIBRARIES})
 
 copy_python_so(fields)
-copy_python_so(gridsCore)
-copy_python_so(arena)
 
-copy_python_wrapper_mod(arena)
 
 
 install (TARGETS gridcells DESTINATION lib)
-install (TARGETS _gridsCore DESTINATION ${PROJECT_SOURCE_DIR}/gridcells)
-install (TARGETS _arena     DESTINATION ${PROJECT_SOURCE_DIR}/gridcells)
 install (TARGETS _fields    DESTINATION ${PROJECT_SOURCE_DIR}/gridcells)

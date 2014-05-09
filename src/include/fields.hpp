@@ -9,9 +9,6 @@
 
 #include <armadillo>
 
-#include "gridsCore.hpp"
-#include "arena.hpp"
-
 namespace grids
 {
 
@@ -31,10 +28,16 @@ namespace grids
  */
 arma::mat*
 spatialRateMap(const arma::vec& spikeTimes,
-               const Position2D& pos,
-               const Arena& arena,
+               const arma::vec& posX,
+               const arma::vec& posY,
+               double pos_dt,
+               const arma::vec& xedges,
+               const arma::vec& yedges,
                double sigma);
 
+arma::vec
+extractSpikePos(const arma::vec& spikePosIdx,
+                const arma::vec& posData);
 
 } // namespace grids
 

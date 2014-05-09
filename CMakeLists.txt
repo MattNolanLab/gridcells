@@ -64,19 +64,19 @@ message(STATUS "  Version: ${NUMPY_VERSION_STRING}")
 message(STATUS "  Include: ${NUMPY_INCLUDE_DIRS}")
 
 # Python module installation settings
-message(STATUS "Python modules:")
-if (NOT DEFINED PYTHON_MODS_INSTALL_PREFIX)
-    set(PYTHON_MODS_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-endif()
-if ((${PYTHON_SETUP_ARGUMENTS} MATCHES "^--user$") OR
-    (${PYTHON_SETUP_ARGUMENTS} MATCHES "[ ]+--user[ ]+") OR
-    (${PYTHON_SETUP_ARGUMENTS} MATCHES "^--user[ ]+") OR
-    (${PYTHON_SETUP_ARGUMENTS} MATCHES "[ ]+--user$"))
-    set(PYTHON_MODS_INSTALL_PREFIX "")
-    message(STATUS "  Installation directory: --user")
-else()
-    message(STATUS "  Installation directory: ${PYTHON_MODS_INSTALL_PREFIX}")
-endif()
+#message(STATUS "Python modules:")
+#if (NOT DEFINED PYTHON_MODS_INSTALL_PREFIX)
+#    set(PYTHON_MODS_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+#endif()
+#if ((${PYTHON_SETUP_ARGUMENTS} MATCHES "^--user$") OR
+#    (${PYTHON_SETUP_ARGUMENTS} MATCHES "[ ]+--user[ ]+") OR
+#    (${PYTHON_SETUP_ARGUMENTS} MATCHES "^--user[ ]+") OR
+#    (${PYTHON_SETUP_ARGUMENTS} MATCHES "[ ]+--user$"))
+#    set(PYTHON_MODS_INSTALL_PREFIX "")
+#    message(STATUS "  Installation directory: --user")
+#else()
+#    message(STATUS "  Installation directory: ${PYTHON_MODS_INSTALL_PREFIX}")
+#endif()
 
 
 set (ARMANPY_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/external/armanpy/include")

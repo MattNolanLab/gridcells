@@ -11,8 +11,9 @@ A list of currently supported tests:
 '''
 import unittest
 import numpy as np
-from gridcells import gridsCore, fields, arena
-from gridcells.gridsCore import Size2D
+from gridcells.core import Position2D
+from gridcells.fields import spatialRateMap
+from gridcells.core import CircularArena, Pair2D
 import fields_ref_impl as refimp
 
 notImplMsg = "Not implemented"
@@ -64,10 +65,10 @@ class TestRateFields(unittest.TestCase):
         d, refRateMap, refXE, refYE = self.loadRealDataSample()
 
         # Tested code
-        ar = arena.CircularArena(self.arenaR, Size2D(self.sigma, self.sigma))
-        pos = gridsCore.Position2D(d.pos_x, d.pos_y, d.pos_dt)
-        theirRateMap = fields.spatialRateMap(d.spikeTimes, pos, ar, self.sigma)
-        theirEdges = ar.getDiscretisation().edges()
+        ar = CircularArena(self.arenaR, Pair2D(self.sigma, self.sigma))
+        pos = Position2D(d.pos_x, d.pos_y, d.pos_dt)
+        theirRateMap = spatialRateMap(d.spikeTimes, pos, ar, self.sigma)
+        theirEdges = ar.getDiscretisation()
         #print(np.max(np.abs(theirRateMap - refRateMap)))
         np.testing.assert_allclose(theirRateMap, refRateMap, self.rtol)
         np.testing.assert_allclose(theirEdges.x, refXE, self.rtol)

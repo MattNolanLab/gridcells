@@ -11,3 +11,4 @@
 /setup.cfg
 /setup.py
 /_python_build
+/*.egg-info
