@@ -1,8 +1,18 @@
 '''
 .. currentmodule:: gridcells.core.arena
 
-The :mod::`~gridcells.core.arena` module provides definitions for all possible
-types of arenas in experiments.
+The :mod:`~gridcells.core.arena` module provides class definitions of arenas. These
+can subsequently be used as input to process spiking data and generate spatial
+firing fields/autocorrelations.
+
+These types of arenas are currently defined:
+--------------------------------------------
+.. autosummary::
+
+    Arena
+    CircularArena
+    RectangularArena
+    SquareArena
 '''
 from abc import ABCMeta, abstractmethod
 
@@ -49,7 +59,7 @@ class Arena(object):
 class RectangularArena(Arena):
     '''A rectangular arena.
 
-    Use :class:``~gridcells.core.RectangularArena`` when you need to work with
+    Use :class:`~gridcells.core.RectangularArena` when you need to work with
     rectangular arenas.
 
     .. note::
