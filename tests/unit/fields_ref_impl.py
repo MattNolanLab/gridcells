@@ -40,8 +40,8 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
     Both spike times and rat tracking data must be aligned in time!
     '''
     precision = arenaDiam/h
-    xedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
-    yedges = np.linspace(-arenaDiam/2, arenaDiam/2, precision+1)
+    xedges = np.linspace(0., arenaDiam, precision+1)
+    yedges = np.linspace(0., arenaDiam, precision+1)
 
     rateMap = np.zeros((len(xedges), len(yedges)))
 

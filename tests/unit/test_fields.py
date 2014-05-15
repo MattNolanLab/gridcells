@@ -9,20 +9,21 @@ import fields_ref_impl as refimp
 @pytest.fixture(scope='module')
 def reference_data():
     class InputData(object):
-        def __init__(self, spikeTimes, pos_x, pos_y, pos_dt, arenaDiam, h):
+        def __init__(self, spikeTimes, pos_x, pos_y, pos_dt, arena_diam, h):
             self.spikeTimes = spikeTimes
             self.pos_x = pos_x
             self.pos_y = pos_y
             self.pos_dt = pos_dt
-            self.arenaDiam = arenaDiam
+            self.arena_diam = arena_diam
             self.h = h
-    dataDir = "tests/data"
+    data_dir = "tests/data"
+    arena_diam = 180.0
     ref_data = InputData(
-        spikeTimes = np.loadtxt("%s/spikeTimes.txt" % dataDir),
-        pos_x      = np.loadtxt("%s/pos_x.txt" % dataDir),
-        pos_y      = np.loadtxt("%s/pos_y.txt" % dataDir),
+        spikeTimes = np.loadtxt("%s/spikeTimes.txt" % data_dir),
+        pos_x      = np.loadtxt("%s/pos_x.txt" % data_dir) + arena_diam/2.,
+        pos_y      = np.loadtxt("%s/pos_y.txt" % data_dir) + arena_diam/2.,
         pos_dt     = 20,
-        arenaDiam  = 180.0,
+        arena_diam = arena_diam,
         h          = 3)
     return ref_data
 
@@ -33,7 +34,7 @@ def reference_spatial_map(reference_data):
     ref_rate_map, ref_xedges, ref_yedges = refimp.SNSpatialRate2D(
             d.spikeTimes,
             d.pos_x, d.pos_y, d.pos_dt,
-            d.arenaDiam,
+            d.arena_diam,
             d.h)
     return d, ref_rate_map, ref_xedges, ref_yedges
 
