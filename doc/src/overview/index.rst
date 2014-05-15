@@ -22,8 +22,7 @@ source code repository related to analysis and simulations of grid cell models.
 Download
 --------
 
-:mod:`gridcells` can be downloaded from bitbucket at
-https://bitbucket.org/lsolanka/gridcells.
+:mod:`gridcells` can be downloaded from https://github.com/lsolanka/gridcells.
 
 
 Dependencies
