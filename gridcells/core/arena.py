@@ -63,9 +63,8 @@ class RectangularArena(Arena):
     rectangular arenas.
 
     .. note::
-        
-        The coordinate system in rectangular and derived arenas is centered at
-        zero. Any other coordinates must be transformed to match it.
+        The origin (0, 0) of the coordinate system in all the arenas is in the
+        bottom-left corner of the arena.
     '''
     def __init__(self, size, discretisation):
         self._sz = size
@@ -74,8 +73,8 @@ class RectangularArena(Arena):
     def getDiscretisation(self):
         numX = self._sz.x / self._q.x + 1
         numY = self._sz.y / self._q.y + 1
-        xedges = np.linspace(-self._sz.x/2., self._sz.x/2., numX)
-        yedges = np.linspace(-self._sz.y/2., self._sz.y/2., numY)
+        xedges = np.linspace(0., self._sz.x, numX)
+        yedges = np.linspace(0., self._sz.y, numY)
         return Pair2D(xedges, yedges)
 
     def getDiscretisationSteps(self):
@@ -86,6 +85,13 @@ class RectangularArena(Arena):
 
     def getSize(self):
         return self._sz
+
+    @property
+    def bounds(self):
+        return Pair2D(
+                    (0., self._sz.x),
+                    (0., self._sz.y)
+               )
 
 
 class SquareArena(RectangularArena):
