@@ -38,6 +38,7 @@ def plot2DFFT(rateMap, arena, ax, titleStr="", scaleBar=None, scaleText=True,
     rateMap_pad = np.zeros((FFTN, FFTN))
     rateMap_pad[0:rateMap.shape[0], 0:rateMap.shape[0]] = rateMap
     FT = np.fft.fft2(rateMap_pad)
+    iFT = np.fft.ifft2(FT)[:rateMap.shape[0], :rateMap.shape[1]]
 
     fxy = np.linspace(-1.0, 1.0, FFTN)
     FX, FY = np.meshgrid(fxy, fxy)
@@ -49,6 +50,7 @@ def plot2DFFT(rateMap, arena, ax, titleStr="", scaleBar=None, scaleText=True,
     ax.axis('scaled')
     ax.axis('off')
 
+    return FT, iFT
 
 
 
