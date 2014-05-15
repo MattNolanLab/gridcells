@@ -24,7 +24,7 @@ from scipy.signal                import correlate2d
 from scipy.ndimage.interpolation import rotate
 
 from . import _fields
-from .core import Pair2D
+from ..core import Pair2D
 
 
 def spatialRateMap(spikeTimes, positions, arena, sigma):

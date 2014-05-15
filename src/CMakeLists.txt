@@ -14,23 +14,24 @@ set_target_properties(gridcells
 # used without a need to install it.
 set (suff ${CMAKE_SHARED_MODULE_SUFFIX})
 
-macro (COPY_PYTHON_SO modname)
+macro (COPY_PYTHON_SO modname pkg_dir)
     set (mod_so ${SWIG_MODULE_${modname}_REAL_NAME}${suff})
     if (${mod_so} STREQUAL "")
         message (FATAL_ERROR
             "Cannot add python module copy command: '${modname}' does not exist!")
     endif (${mod_so} STREQUAL "")
 
+    set(mod_dst_path ${PROJECT_SOURCE_DIR}/gridcells/${pkg_dir}/${mod_so})
     add_custom_command(
         TARGET _${modname}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${mod_so} ${PROJECT_SOURCE_DIR}/gridcells/${mod_so}
+        COMMAND ${CMAKE_COMMAND} -E copy ${mod_so} ${mod_dst_path}
         COMMENT "Copying ${mod_so} shared object to source tree."
     )
     get_directory_property(extra_clean_files ADDITIONAL_MAKE_CLEAN_FILES )
     set_directory_properties (PROPERTIES
         ADDITIONAL_MAKE_CLEAN_FILES 
-            "${extra_clean_files};${PROJECT_SOURCE_DIR}/gridcells/${mod_so}"
+            "${extra_clean_files};${mod_dst_path}"
     )
 endmacro(COPY_PYTHON_SO)
 
@@ -70,7 +71,7 @@ set (SWIG_MODULE_fields_EXTRA_DEPS
 swig_add_module (fields python fields.i)
 swig_link_libraries (fields gridcells ${PYTHON_LIBRARIES})
 
-copy_python_so(fields)
+copy_python_so(fields "analysis")
 
 
 
