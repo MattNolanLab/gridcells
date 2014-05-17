@@ -87,6 +87,13 @@ class RectangularArena(Arena):
         return self._sz
 
     @property
+    def sz(self):
+        '''Return the size of the arena. Equivalent to
+        :meth:`~RectangularArena.getSize`.
+        '''
+        return self._sz
+
+    @property
     def bounds(self):
         return Pair2D(
                     (0., self._sz.x),
