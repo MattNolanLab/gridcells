@@ -8,8 +8,8 @@
 /build
 /dist
 /MANIFEST
-/setup.cfg
-/setup.py
-/_python_build
+/build
 /*.egg-info
 /git_hooks
+
+/README.html
