@@ -12,3 +12,4 @@
 /setup.py
 /_python_build
 /*.egg-info
+/git_hooks

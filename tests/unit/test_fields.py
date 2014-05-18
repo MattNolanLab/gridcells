@@ -1,8 +1,10 @@
+from __future__ import absolute_import, division, print_function
+
 import pytest
 import numpy as np
 from gridcells.core import Position2D
-from gridcells.fields import spatialRateMap
 from gridcells.core import CircularArena, Pair2D
+from gridcells.analysis import spatialRateMap
 import fields_ref_impl as refimp
 
 

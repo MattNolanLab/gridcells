@@ -1,9 +1,11 @@
 '''
-.. currentmodule:: gridcells.fields
+===============================================================
+:mod:`gridcells.analysis.fields` - grid field related analysis
+===============================================================
 
-The :mod:`~gridcells.fields` module contains routines to analyse spiking data
-either from experiments involoving a rodent running in an arena or simulations
-involving an animat running in a simulated arena.
+The :mod:`~gridcells.analysis.fields` module contains routines to analyse
+spiking data either from experiments involoving a rodent running in an arena or
+simulations involving an animat running in a simulated arena.
 
 Functions
 ---------
@@ -24,7 +26,7 @@ from scipy.signal                import correlate2d
 from scipy.ndimage.interpolation import rotate
 
 from . import _fields
-from .core import Pair2D
+from ..core import Pair2D
 
 
 def spatialRateMap(spikeTimes, positions, arena, sigma):

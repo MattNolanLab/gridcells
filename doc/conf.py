@@ -19,7 +19,6 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.abspath('../external/breathe'))
 sys.path.insert(0, os.path.abspath('../external/numpydoc'))
 sys.path.insert(0, os.path.abspath('../external/sphinx_rtd_theme'))
 
@@ -42,15 +41,10 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
     'numpydoc',
-    'breathe',
 ]
 
 # Todo
 todo_include_todos = True
-
-# Breathe projects
-breathe_projects = {"GridCells" : os.path.abspath('./doxygenOutput/xml')}
-breathe_default_project = "GridCells"
 
 # Fix an issue with nonexistent documents:
 # https://github.com/phn/pytpm/issues/3#issuecomment-12133978

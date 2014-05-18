@@ -5,7 +5,7 @@ import numpy as np
 import numpy.ma as ma
 import numpy.fft
 
-from ..fields import extractSpikePositions
+from ..analysis import extractSpikePositions
 from .low_level import xScaleBar
 
 default_margin = .1

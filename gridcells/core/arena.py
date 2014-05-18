@@ -1,5 +1,7 @@
 '''
-.. currentmodule:: gridcells.core.arena
+==============================================
+:mod:`gridcells.core.arena` - Defining arenas
+==============================================
 
 The :mod:`~gridcells.core.arena` module provides class definitions of arenas. These
 can subsequently be used as input to process spiking data and generate spatial
@@ -84,6 +86,13 @@ class RectangularArena(Arena):
         return None
 
     def getSize(self):
+        return self._sz
+
+    @property
+    def sz(self):
+        '''Return the size of the arena. Equivalent to
+        :meth:`~RectangularArena.getSize`.
+        '''
         return self._sz
 
     @property
