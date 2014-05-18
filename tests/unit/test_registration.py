@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 
 from gridcells.core import Pair2D, Position2D, SquareArena
-from gridcells.analysis import RegistrationEngine
+from gridcells.analysis import ArenaOriginRegistration
 
 
 @pytest.fixture(scope='module')
@@ -25,7 +25,7 @@ def arena(request):
 
 @pytest.fixture(scope='module')
 def registration_engine():
-    return RegistrationEngine()
+    return ArenaOriginRegistration()
 
 @pytest.fixture(scope='module')
 def rtol():
@@ -90,14 +90,14 @@ class UrandPositionGenerator(object):
             yield self.Data(pos, offsets)
             
 
-class TestRegistrationEngine(object):
+class TestRegistration(object):
     '''Test the whole registration process.
 
     This works only with 2D arenas for now.
     '''
 
-    def test_registration(self, position_generator, arena,
-                          registration_engine, rtol):
+    def test_origin_registration(self, position_generator, arena,
+                                 registration_engine, rtol):
         pg = position_generator
         rege = registration_engine
         atol = rtol * pg.max_outlier_range * max(arena.sz.x, arena.sz.y)

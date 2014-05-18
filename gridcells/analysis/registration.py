@@ -10,7 +10,8 @@ Classes
 -------
 .. autosummary::
 
-    RegistrationEngine
+    ArenaOriginRegistration
+    OriginRegistrationResult
 
 '''
 from __future__ import absolute_import, division, print_function
@@ -21,7 +22,17 @@ from scipy.optimize import minimize
 from ..core import Pair2D, Position2D
 
 
-class RegistrationEngine(object):
+class OriginRegistrationResult(object):
+    '''A holder for registered data.
+
+    Contains two attributes: ``positions`` and estimated ``offsets`` in the
+    arena.
+    '''
+    def __init__(self, positions, offsets):
+        self.positions = positions
+        self.offsets = offsets
+
+class ArenaOriginRegistration(object):
     '''Register positional data to zero-coordinates of an arena.
 
     The actual positional data recordings are prone to outliers. This
@@ -34,20 +45,8 @@ class RegistrationEngine(object):
 
         Deal with rotations.
     '''
-
-    class Result(object):
-        '''A holder for registered data.
-
-        Contains two attributes: ``positions`` and estimated ``offsets`` in the
-        arena.
-        '''
-        def __init__(self, positions, offsets):
-            self.positions = positions
-            self.offsets = offsets
-
-
     def __init__(self, arena=None):
-        '''Initialise with an ``arena`` agains which to register the data.
+        '''Initialise with an ``arena`` against which to register the data.
 
         Also use :meth:`set_arena` to change the specific
         arena.
@@ -72,7 +71,7 @@ class RegistrationEngine(object):
 
         Returns
         -------
-        res : :class:`Result`
+        res : :class:`OriginRegistrationResult`
             The result object, containing new positional data and the
             determined offsets.
         '''
@@ -98,7 +97,7 @@ class RegistrationEngine(object):
         registered_pos = Position2D(positions.x - offsets.x,
                                     positions.y - offsets.y,
                                     positions.dt)
-        return self.Result(registered_pos, offsets)
+        return OriginRegistrationResult(registered_pos, offsets)
 
         
 
