@@ -5,8 +5,9 @@ Modules
 =======
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
-    gridsCore
-    arena
-    fields
+    core.common
+    core.arena
+    analysis.fields
+    analysis.registration

@@ -1,5 +1,7 @@
 '''
-.. currentmodule:: gridcells.core.arena
+==============================================
+:mod:`gridcells.core.arena` - Defining arenas
+==============================================
 
 The :mod:`~gridcells.core.arena` module provides class definitions of arenas. These
 can subsequently be used as input to process spiking data and generate spatial

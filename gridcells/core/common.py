@@ -1,5 +1,17 @@
-'''Common definitions'''
+'''
+========================================================
+:mod:`gridcells.core.common` - common/shared definitions
+========================================================
 
+The :mod:`~gridcells.core.common` module is a collection of basic classes used
+throughout the package:
+
+.. autosummary::
+
+    Pair2D
+    Position2D
+
+'''
 
 class Pair2D(object):
     '''A pair of ``x`` and ``y`` attributes.'''
