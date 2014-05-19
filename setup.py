@@ -1,13 +1,20 @@
 from distutils.core import setup, Extension
 import numpy
 
+all_packages = [
+        'gridcells',
+        'gridcells.analysis',
+        'gridcells.core',
+        'gridcells.plotting',
+]
+
 setup(
         name='gridcells',
-        version='0.1.0',
+        version='0.1dev',
         description='Package for grid cell analysis and simulation.',
         author='Lukas Solanka',
         author_email='lsolanka@gmail.com',
-        packages=['gridcells'],
+        packages=all_packages,
         ext_modules=[Extension('gridcells.analysis._fields',
                                     ['src/fields.cpp', 'src/fields.i'],
                                      swig_opts=['-builtin',

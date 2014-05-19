@@ -5,11 +5,15 @@
 *.swp
 *.swo
 *.pyc
+
+/.DS_Store
+
 /build
 /dist
 /MANIFEST
 /build
 /*.egg-info
 /git_hooks
+/.tox
 
 /README.html

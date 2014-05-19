@@ -1,0 +1,4 @@
+include LICENSE README.rst
+recursive-include doc *.py *.rst *.bat
+recursive-include external *.*
+recursive-include src *.cpp *.hpp *.i
