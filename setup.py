@@ -25,6 +25,7 @@ setup(
                                                 '-Isrc/include'])
                     ],
         include_dirs=['src/include', 'external/armanpy/include',
+                      'external/armadillo/include',
                       numpy.get_include()],
         install_requires=['numpy>=1.8.0',
                           'scipy>=0.13.3']
