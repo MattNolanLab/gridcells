@@ -6,4 +6,4 @@
 	url = https://github.com/snide/sphinx_rtd_theme.git
 [submodule "external/armadillo"]
 	path = external/armadillo
-	url = git@github.com:lsolanka/armadillo.git
+	url = https://github.com/lsolanka/armadillo.git

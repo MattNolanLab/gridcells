@@ -1,0 +1,18 @@
+language: python
+python:
+  - "2.7"
+
+before_install:
+  - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran
+  - sudo apt-get install -qq swig
+
+install:
+  - pip install --upgrade setuptools
+  - travis_wait pip -q install numpy
+  - travis_wait pip -q install scipy
+  - pip install pytest
+
+script:
+  - python setup.py install
+  - py.test tests
+
