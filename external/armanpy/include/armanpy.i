@@ -92,8 +92,6 @@
     }
 }
 
-#define ARMANPY_SHARED_PTR
-
 %header %{
     #include <algorithm>
     #include <armadillo>
