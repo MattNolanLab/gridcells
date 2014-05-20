@@ -14,8 +14,9 @@ they are active form a hexagonal lattice. More information can be found in
 What does :mod:`gridcells` do
 -----------------------------
 
-:mod:`gridcells` is a simple C++/Python library that aims to provide an open
-source code repository related to analysis and simulations of grid cell models.
+:mod:`gridcells` is a simple Python library that aims to provide an open source
+code repository related to analysis of grid cell related experiments and
+simulation of models of grid cells.
 
 
 
@@ -29,15 +30,13 @@ Dependencies
 ------------
 
 There are a number of dependencies needed for the python version:
-    - CMake (>= 2.8)
-
     - `armadillo <http://arma.sourceforge.net/>`_ (>= 4.100)
 
     - SWIG (>= 2.0)
 
-    - numpy (>= 1.6)
+    - numpy (>= 1.8)
 
-    - scipy (>= 0.13)
+    - scipy (>= 0.13.3)
 
 For Linux, simply install these using the package manager.For Mac OS the
 easiest way is probably to use `homebrew <http://brew.sh/>`_. This package has
@@ -48,33 +47,15 @@ should be no problems.
 Installation
 ------------
 
-After installing all the dependencies, perform the following steps. If you only
-want to use the package from the source directory, follow steps 1. -- 3. and
-set your ``PYTHONPATH`` appropriately. Otherwise, follow all the steps.
+After installing ``armadillo`` and ``SWIG``, run::
 
-    1. In the root directory, create the ``build`` directory and enter it.
+    python setup.py install
 
-    2. Run cmake. Currently the armadillo path has to be specified explicitly,
-       i.e.::
-      
-            cmake .. -DARMADILLO_INCLUDE_DIR=<path_to_armadillo>
-           
-       Replace ``<path_to_armadillo>`` with the appropriate directory
-       containing the header files (for instance ``/usr/local/include``).
+.. note::
 
-       In case you do not want to install system-wide, set the prefix parameter
-       when running cmake: ``-DCMAKE_INSTALL_PREFIX=<install_path>``.
-
-    3. Run ``make``. This will compile all the C++ files and copy the SWIG
-       generated python modules into the original source.
-
-    4. Run ``sudo make install`` or just ``make install`` if you are installing
-       to a user-defined directory. Once you have run this command you cannot
-       use :mod:`gridcells` from the source directory (you must use the
-       installed version).
-
-    5. Optionally run tests in the ``gridcells/tests`` directory by running
-       ``python -m unittest discover``.
+    The automatic installation process is a work in progress and therefore,
+    when using ``pip`` to install, ``numpy`` (in the minimal version) must
+    already be installed before running ``pip install``.
 
 
 License

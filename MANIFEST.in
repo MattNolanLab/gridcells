@@ -1,0 +1,7 @@
+include LICENSE README.rst
+recursive-include doc *.py *.rst *.bat
+recursive-include src *.cpp *.hpp *.i
+recursive-include external/armanpy *.*
+recursive-include external/numpydoc *.*
+recursive-include external/sphinx_rtd_theme *.*
+recursive-include external/armadillo/include armadillo *.hpp
