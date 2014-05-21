@@ -121,7 +121,6 @@ class TestSpikePosExtraction(object):
         ref_spike_pos = self.reference_spike_pos(spike_times, positions)
         assert spike_pos == ref_spike_pos
 
-    @pytest.mark.xfail
     def test_negative_idx(self, nspikes, incorrect_spikes_p, positions):
         if nspikes == 0:
             return
@@ -138,7 +137,6 @@ class TestSpikePosExtraction(object):
         np.testing.assert_equal(their_spike_pos.x, neg_spike_pos.x)
         np.testing.assert_equal(their_spike_pos.y, neg_spike_pos.y)
 
-    @pytest.mark.xfail
     def test_out_of_bounds_idx(self, nspikes, incorrect_spikes_p, positions):
         if nspikes == 0:
             return

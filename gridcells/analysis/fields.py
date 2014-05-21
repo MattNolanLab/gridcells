@@ -172,9 +172,8 @@ def gridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
 
 
 def extractSpikePositions(spikeTimes, positions):
-    spikeIdx = np.empty(len(spikeTimes), dtype=np.int)
-    spikeIdx[:] = spikeTimes // positions.dt
-    return (Pair2D(positions.x[spikeIdx], positions.y[spikeIdx]),
-            np.max(spikeIdx))
-
+    spikeIdx = spikeTimes / positions.dt
+    pos_x = _fields.extractSpikePos(spikeIdx, positions.x)
+    pos_y = _fields.extractSpikePos(spikeIdx, positions.y)
+    return Pair2D(pos_x, pos_y), np.max(spikeIdx)
 
