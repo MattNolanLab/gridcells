@@ -15,10 +15,11 @@ extractSpikePos(const vec& spikePosIdx, const vec& posData)
 {
     vec res(spikePosIdx.n_elem);
     for (int i = 0; i < spikePosIdx.n_elem; i++) {
-        if (spikePosIdx(i) >= posData.n_elem) {
-            std::cerr << spikePosIdx(i) << " >= " << posData.n_elem << std::endl;
+        if (spikePosIdx(i) >= posData.n_elem || spikePosIdx(i) < 0) {
+            res(i) = NAN;
+        } else {
+            res(i) = posData(floor(spikePosIdx(i)));
         }
-        res(i) = posData(spikePosIdx(i));
     }
     return res;
 }
