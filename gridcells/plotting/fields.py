@@ -28,14 +28,14 @@ Next, create an Axes object that you can plot to::
 
 The ``add_subplot`` method takes a keyword argument
 ``projection="gridcells_arena"`` that specifies the type of Axes to use. Here,
-we also have to specify the ``arena`` parameter in the form of
+we also have to specify the ``arena`` parameter in the form of an
 :class:`~gridcells.core.arena.Arena` instance. In our case we have created a
 square arena with size 100x100 and a discretisation of 1x1 (in arbitrary
 units).
 
 Next, for illustration purposes, we create a random spatial rate map with size
 compatible with the current arena, and plot to the axes, by calling
-:meth:`~gridcells.plotting.fields.GridArenaAxes.spatial_rate_map`::
+:meth:`~GridArenaAxes.spatial_rate_map`::
 
     sz = arena.getDiscretisation()
     rate_map = np.random.rand(len(sz.x), len(sz.y))
@@ -61,8 +61,6 @@ from matplotlib.axes import Axes as MplAxes
 from ..analysis import extractSpikePositions
 from .low_level import hscalebar
 
-default_margin = .1
-
 
 def _scale_bar(scalelen, scaletext, ax):
     if (scalelen is not None):
@@ -85,10 +83,33 @@ class GridArenaAxes(MplAxes):
     '''A custom matplotlib Axes that allows to plot figures in the shape of
     arenas.
 
+    **Methods:**
+
+    .. autosummary::
+
+        fft2
+        spatial_rate_map
+        spikes
     '''
+    #: Name of the class used to register with matplotlib
     name = "gridcells_arena"
 
+    #: Default margin in axis coordinates
+    default_margin = .0
+
     def __init__(self, *args, **kwargs):
+        '''Create the axes.
+
+        Should not be used directly, but via the matplotlib ``projection``
+        keyword argument.
+
+        Parameters
+        ==========
+        arena : :class:`~gridcells.core.arena.Arena`
+            Are that will be used for plotting. This has to be specified as a
+            keyword argument to matplotlib's :meth:`Figure.add_subplot` or
+            :meth:`Figure.add_axes`.
+        '''
         self._arena = kwargs.pop('arena')
         MplAxes.__init__(self, *args, **kwargs)
 
@@ -100,8 +121,26 @@ class GridArenaAxes(MplAxes):
     def arena(self, a):
         self._arena = a
 
+    def set_xlimits(self, low, high, margin=None):
+        if margin is None:
+            margin = self.default_margin
+        r = high - low
+        abs_margin = margin * r
+        self.set_xlim([low-abs_margin, high+abs_margin])
+
+    def set_ylimits(self, low, high, margin=None):
+        if margin is None:
+            margin = self.default_margin
+        r = high - low
+        abs_margin = margin * r
+        self.set_ylim([low-abs_margin, high+abs_margin])
+
+    def set_xylimits(self, low, high, margin=None):
+        self.set_xlimits(low, high, margin)
+        self.set_ylimits(low, high, margin)
+
     def fft2(self, rate_map, scalebar=None, scaletext='$cm^{-1}$', fftn=None,
-             subtractmean=True):
+             subtractmean=True, **kwargs):
         '''Plot a 2D Fourier transform (power) of a spatial rate map.
 
         Parameters
@@ -122,7 +161,11 @@ class GridArenaAxes(MplAxes):
             Whether to subtract the mean of the signal before computing the
             FFT. This will remove any constant component in the centre of the
             spectrogram.
+        kwargs : kwargs
+            Optional kwargs that will be passed to matplotlib's pcolormesh.
         '''
+        kwargs['rasterized'] = kwargs.get('rasterized', True)
+
         if fftn is None:
             fftn = np.max(rate_map.shape)
 
@@ -146,7 +189,7 @@ class GridArenaAxes(MplAxes):
         FY *= fs_y/2.0
 
         psd_centered = np.abs(np.fft.fftshift(ft))**2
-        self.pcolormesh(FX, FY, psd_centered)
+        self.pcolormesh(FX, FY, psd_centered, **kwargs)
         self.axis('scaled')
         self.axis('off')
 
@@ -176,17 +219,20 @@ class GridArenaAxes(MplAxes):
         kwargs : kwargs
             Optional kwargs that will be passed to matplotlib's pcolormesh.
         '''
+        kwargs['rasterized'] = kwargs.get('rasterized', True)
+
         edges = self._arena.getDiscretisation()
         X, Y = np.meshgrid(edges.x, edges.y)
         self.pcolormesh(X, Y, rate_map, **kwargs)
         self.axis('scaled')
         self.axis('off')
-        _set_arena_limits(self._arena, default_margin, self)
+        _set_arena_limits(self._arena, self.default_margin, self)
         _scale_bar(scalebar, scaletext, self)
         if (maxrate):
             r_str = '{0:.1f} Hz'.format(np.max(rate_map.flatten()))
-            self.text(1.0, 1.025, r_str, ha="right", va='bottom',
-                      fontsize='xx-small', transform=self.transAxes)
+            self.text(1.-self.default_margin, 1.025, r_str, ha="right",
+                      va='bottom', fontsize='xx-small',
+                      transform=self.transAxes)
         if (g_score is not None):
             if (int(g_score*100)/100.0 == int(g_score)):
                 g_str = '{0}'.format(int(g_score))
@@ -196,7 +242,7 @@ class GridArenaAxes(MplAxes):
                       fontsize='xx-small', transform=self.transAxes)
 
     def spikes(self, spike_times, pos, dotsize=5, scalebar=None,
-               scaletext='cm'):
+               scaletext='cm', **kwargs):
         '''Plot spike positions.
 
         Both positions and spikes must be aligned!
@@ -207,24 +253,25 @@ class GridArenaAxes(MplAxes):
             Spike times to plot on top of the trajectories
         pos : gridcells.Position2D
             Positional data for the spike times.
-
-        Keyword arguments:
-        ==================
-        scalebar
-        scaletext
-        dotsize
-
-        .. todo::
-            Document kwargs properly
+        dotsize : float
+            Size of spike dots.
+        scalebar : float, optional
+            The length of the scale bar that will be plotted as horizontal
+            line. Must be in data units.
+        scaletext : str, optional
+            Text after the scale bar number, i.e. units.
+        kwargs : kwargs
+            Optional kwargs that will be passed to matplotlib's plot functions
+            (for the trajectories and spike dots).
         '''
         neuronPos, m_i = extractSpikePositions(spike_times, pos)
 
-        self.plot(pos.x, pos.y)
+        self.plot(pos.x, pos.y, **kwargs)
         self.hold('on')
-        self.plot(neuronPos.x, neuronPos.y, 'or', markersize=dotsize)
+        self.plot(neuronPos.x, neuronPos.y, 'or', markersize=dotsize, **kwargs)
         self.axis('off')
         self.axis('scaled')
-        _set_arena_limits(self._arena, default_margin, self)
+        _set_arena_limits(self._arena, self.default_margin, self)
         _scale_bar(scalebar, scaletext, self)
 
 
