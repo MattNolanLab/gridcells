@@ -59,19 +59,19 @@ import matplotlib as mpl
 from matplotlib.axes import Axes as MplAxes
 
 from ..analysis import extractSpikePositions
-from .low_level import xScaleBar
+from .low_level import hscalebar
 
 default_margin = .1
 
 
-def _scale_bar(scaleLen, scaleText, ax):
-    if (scaleLen is not None):
-        if scaleText:
-            unitsText = scaleText
+def _scale_bar(scalelen, scaletext, ax):
+    if (scalelen is not None):
+        if scaletext:
+            unitstext = scaletext
         else:
-            unitsText = None
-        xScaleBar(scaleLen, x=0.6, y=-.05, ax=ax, height=0.015,
-                  unitsText=unitsText, size='small')
+            unitstext = None
+        hscalebar(scalelen, x=0.6, y=-.05, ax=ax, height=0.015,
+                  unitstext=unitstext, size='small')
 
 
 def _set_arena_limits(arena, margin_factor, ax):
@@ -100,7 +100,7 @@ class GridArenaAxes(MplAxes):
     def arena(self, a):
         self._arena = a
 
-    def fft2(self, rate_map, scalebar=None, scaletext='$cm^{-1}$', FFTN=None,
+    def fft2(self, rate_map, scalebar=None, scaletext='$cm^{-1}$', fftn=None,
              subtractmean=True):
         '''Plot a 2D Fourier transform (power) of a spatial rate map.
 
@@ -114,7 +114,7 @@ class GridArenaAxes(MplAxes):
             line. Must be in data units.
         scaletext : str, optional
             Text after the scale bar number, i.e. units.
-        FFTN : int, optional
+        fftn : int, optional
             Size of the array that the Fourier transform is actually computed
             from. If ``None`` it will be ``max(rate_map.shape)``. Otherwise the
             ``rate_map`` will be padded with zeros.
@@ -123,8 +123,8 @@ class GridArenaAxes(MplAxes):
             FFT. This will remove any constant component in the centre of the
             spectrogram.
         '''
-        if FFTN is None:
-            FFTN = np.max(rate_map.shape)
+        if fftn is None:
+            fftn = np.max(rate_map.shape)
 
         rate_map = np.copy(rate_map)
         rate_map[np.isnan(rate_map)] = 0
@@ -132,30 +132,30 @@ class GridArenaAxes(MplAxes):
             rate_map -= np.mean(rate_map)
 
         ds = self._arena.getDiscretisationSteps()
-        FsX = 1. / ds.x  # units: specified by caller
-        FsY = 1. / ds.y
+        fs_x = 1. / ds.x  # units: specified by caller
+        fs_y = 1. / ds.y
 
-        rateMap_pad = np.zeros((FFTN, FFTN))
-        rateMap_pad[0:rate_map.shape[0], 0:rate_map.shape[0]] = rate_map
-        FT = np.fft.fft2(rateMap_pad)
-        iFT = np.fft.ifft2(FT)[:rate_map.shape[0], :rate_map.shape[1]]
+        ratemap_pad = np.zeros((fftn, fftn))
+        ratemap_pad[0:rate_map.shape[0], 0:rate_map.shape[0]] = rate_map
+        ft = np.fft.fft2(ratemap_pad)
+        ift = np.fft.ifft2(ft)[:rate_map.shape[0], :rate_map.shape[1]]
 
-        fxy = np.linspace(-1.0, 1.0, FFTN)
+        fxy = np.linspace(-1.0, 1.0, fftn)
         FX, FY = np.meshgrid(fxy, fxy)
-        FX *= FsX/2.0
-        FY *= FsY/2.0
+        FX *= fs_x/2.0
+        FY *= fs_y/2.0
 
-        PSD_centered = np.abs(np.fft.fftshift(FT))**2
-        self.pcolormesh(FX, FY, PSD_centered)
+        psd_centered = np.abs(np.fft.fftshift(ft))**2
+        self.pcolormesh(FX, FY, psd_centered)
         self.axis('scaled')
         self.axis('off')
 
         _scale_bar(scalebar, scaletext, self)
 
-        return FT, iFT
+        return ft, ift
 
     def spatial_rate_map(self, rate_map, scalebar=None, scaletext='cm',
-                         maxrate=True, G=None, **kwargs):
+                         maxrate=True, g_score=None, **kwargs):
         '''
         Plot the spatial rate map in the specified arena.
 
@@ -171,7 +171,7 @@ class GridArenaAxes(MplAxes):
             Text after the scale bar number, i.e. units.
         maxrate : bool, optional
             Whether to print the max firing rate (top right corner)
-        G : float, optional
+        g_score : float, optional
             Grid score for this spatial rate map. If ``None``, plot nothing.
         kwargs : kwargs
             Optional kwargs that will be passed to matplotlib's pcolormesh.
@@ -184,15 +184,15 @@ class GridArenaAxes(MplAxes):
         _set_arena_limits(self._arena, default_margin, self)
         _scale_bar(scalebar, scaletext, self)
         if (maxrate):
-            rStr = '{0:.1f} Hz'.format(np.max(rate_map.flatten()))
-            self.text(1.0, 1.025, rStr, ha="right", va='bottom',
+            r_str = '{0:.1f} Hz'.format(np.max(rate_map.flatten()))
+            self.text(1.0, 1.025, r_str, ha="right", va='bottom',
                       fontsize='xx-small', transform=self.transAxes)
-        if (G is not None):
-            if (int(G*100)/100.0 == int(G)):
-                gStr = '{0}'.format(int(G))
+        if (g_score is not None):
+            if (int(g_score*100)/100.0 == int(g_score)):
+                g_str = '{0}'.format(int(g_score))
             else:
-                gStr = '{0:.2f}'.format(G)
-            self.text(0, 1.025, gStr, ha="left", va='bottom',
+                g_str = '{0:.2f}'.format(g_score)
+            self.text(0, 1.025, g_str, ha="left", va='bottom',
                       fontsize='xx-small', transform=self.transAxes)
 
     def spikes(self, spike_times, pos, dotsize=5, scalebar=None,
@@ -229,7 +229,7 @@ class GridArenaAxes(MplAxes):
 
 
 #   def plotAutoCorrelation(ac, X, Y, diam, ax, titleStr="",
-#           scaleBar=None, scaleText=True, **kw):
+#           scaleBar=None, scaletext=True, **kw):
 #       ac = ma.masked_array(ac, mask = np.sqrt(X**2 + Y**2) > diam)
 #       ax.pcolormesh(X, Y, ac, **kw)
 #       ax.axis('scaled')
@@ -238,7 +238,7 @@ class GridArenaAxes(MplAxes):
 #       if (diam != np.inf):
 #           ax.set_xlim([-lim_factor*diam, lim_factor*diam])
 #           ax.set_ylim([-lim_factor*diam, lim_factor*diam])
-#       _scale_bar(scaleBar, scaleText, ax)
+#       _scale_bar(scaleBar, scaletext, ax)
 
 
 # Register with matplotlib
