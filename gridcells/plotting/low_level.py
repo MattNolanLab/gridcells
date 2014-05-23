@@ -5,14 +5,13 @@ Low level plotting sub-routines.
 '''
 import numpy as np
 
-import matplotlib.pyplot     as m
-import matplotlib.transforms as transforms
-import matplotlib.patches    as patches
-
+import matplotlib.pyplot as m
+import matplotlib.patches as patches
 from matplotlib import rcParams as rcp
 
+
 def xScaleBar(scaleLen, x, y, ax=None, height=0.02, color='black',
-        unitsText='ms', size='medium', textYOffset=0.075):
+              unitsText='ms', size='medium', textYOffset=0.075):
     '''
     Plot a horizontal (X) scale bar into the axes.
 
@@ -24,27 +23,28 @@ def xScaleBar(scaleLen, x, y, ax=None, height=0.02, color='black',
     x  : float, optional
         Left end of the scale bar, in axis coordinates.
     y : float, optional
-        Bottom position of the scale bar, in axis units. This excludes the scale
-        text
+        Bottom position of the scale bar, in axis units. This excludes the
+        scale text
     height : float, optional
         Height of the scale bar, in relative axis units.
     color
         Color of the bar.
     unitsText : string
         Units drawn below the scale bar.
-    size 
+    size
         Size of the text below the scale bar.
     textYOffset : float
         Offset of the text from the scale bar. Positive value is a downward
         offset.
     '''
-    if ax is None: ax = m.gca()
+    if ax is None:
+        ax = m.gca()
 
     (left, right) = ax.get_xlim()
     axisLen = scaleLen / (right - left)
     scaleCenter = x + 0.5*axisLen
-    rect = patches.Rectangle((x,y), width=axisLen, height=height,
-            transform=ax.transAxes, color=color)
+    rect = patches.Rectangle((x, y), width=axisLen, height=height,
+                             transform=ax.transAxes, color=color)
     rect.set_clip_on(False)
     ax.add_patch(rect)
     if (unitsText is not None):
@@ -57,7 +57,7 @@ def xScaleBar(scaleLen, x, y, ax=None, height=0.02, color='black',
 
 
 def yScaleBar(scaleLen, x, y, ax=None, width=0.0075, color='black',
-        unitsText='ms', size='medium', textXOffset=0.075):
+              unitsText='ms', size='medium', textXOffset=0.075):
     '''
     Plot a vertical (Y) scale bar into the axes.
 
@@ -77,19 +77,20 @@ def yScaleBar(scaleLen, x, y, ax=None, width=0.0075, color='black',
         Color of the bar.
     unitsText : string
         Units drawn below the scale bar.
-    size 
+    size
         Size of the text below the scale bar.
     textXOffset : float
         Offset of the text from the scale bar. Positive value is a leftward
         offset.
     '''
-    if ax is None: ax = m.gca()
+    if ax is None:
+        ax = m.gca()
 
     (bottom, top) = ax.get_ylim()
     axisHeight = scaleLen / (top - bottom)
     scaleCenter = y + 0.5*axisHeight
-    rect = patches.Rectangle((x,y), width=width, height=axisHeight,
-            transform=ax.transAxes, color=color)
+    rect = patches.Rectangle((x, y), width=width, height=axisHeight,
+                             transform=ax.transAxes, color=color)
     rect.set_clip_on(False)
     ax.add_patch(rect)
     if (unitsText is not None):
@@ -108,10 +109,9 @@ def removeAllSpines(ax):
 
 
 def zeroLines(ax, which='both'):
-    color  = rcp['grid.color']
-    ls     = rcp['grid.linestyle']
-    lw     = rcp['grid.linewidth']
-    alphsa = rcp['grid.alpha']
+    color = rcp['grid.color']
+    ls = rcp['grid.linestyle']
+    lw = rcp['grid.linewidth']
 
     if (which == 'x' or which == 'both'):
         ax.axvline(0, ls=ls, lw=lw, color=color, zorder=-10)
@@ -123,4 +123,3 @@ def zeroLines(ax, which='both'):
 def symmetricDataLimits(data):
     absmax = np.max(np.abs(data.flatten()))
     return (-absmax, absmax)
-

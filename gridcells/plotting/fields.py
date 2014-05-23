@@ -51,6 +51,8 @@ Custom grid cell plotting Axes
 '''
 from __future__ import absolute_import, division, print_function
 
+__all__ = ['GridArenaAxes']
+
 import numpy as np
 
 import matplotlib as mpl
