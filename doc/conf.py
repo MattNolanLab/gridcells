@@ -15,10 +15,15 @@
 import sys
 import os
 
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if on_rtd:
+    print('Inside RTD environment! Using Mock objects as modules')
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('..'))
+if on_rtd:
+    sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('../external/numpydoc'))
 sys.path.insert(0, os.path.abspath('../external/sphinx_rtd_theme'))
 
@@ -118,7 +123,10 @@ pygments_style = 'friendly'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinx_rtd_theme'
+if on_rtd:
+    html_theme = 'default'
+else:
+    html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -147,7 +155,7 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -276,3 +284,38 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+
+
+
+##############################################################################
+class Mock(object):
+
+    __all__ = []
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(cls, name):
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        elif name[0] == name[0].upper():
+            mockType = type(name, (), {})
+            mockType.__module__ = __name__
+            return mockType
+        else:
+            return Mock()
+
+MOCK_MODULES = [
+    'numpy', 'numpy.ma',
+    'scipy', 'scipy.integrate', 'scipy.signal', 'scipy.ndimage',
+    'scipy.ndimage.interpolation', 'scipy.optimize',
+    'matplotlib', 'matplotlib.axes', 'matplotlib.pyplot', 'matplotlib.patches'
+]
+if on_rtd:
+    for mod_name in MOCK_MODULES:
+        sys.modules[mod_name] = Mock()

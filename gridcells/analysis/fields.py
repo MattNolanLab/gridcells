@@ -18,6 +18,8 @@ Functions
 '''
 from __future__ import absolute_import, division, print_function
 
+import os
+
 import numpy    as np
 import numpy.ma as ma
 
@@ -25,7 +27,10 @@ from scipy.integrate             import trapz
 from scipy.signal                import correlate2d
 from scipy.ndimage.interpolation import rotate
 
-from . import _fields
+# Do not import when in RDT environment
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if not on_rtd:
+    from . import _fields
 from ..core import Pair2D
 
 
