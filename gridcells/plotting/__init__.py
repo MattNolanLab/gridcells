@@ -8,5 +8,6 @@ data.
 '''
 from __future__ import absolute_import, division, print_function
 
-from .fields import plotSpikes2D, plotSpatialRateMap, plot2DFFT #, plotAutoCorrelation
+from .fields import GridArenaAxes
 
+__all__ = ['GridArenaAxes']
