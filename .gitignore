@@ -15,5 +15,6 @@
 /*.egg-info
 /git_hooks
 /.tox
+/tmp
 
 /README.html
