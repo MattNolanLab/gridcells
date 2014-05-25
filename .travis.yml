@@ -8,11 +8,11 @@ before_install:
 
 install:
   - pip install --upgrade setuptools
-  - travis_wait pip -q install numpy
-  - travis_wait pip -q install scipy
-  - pip install pytest
+  - pip install -t $PWD/tmp https://dl.dropboxusercontent.com/u/9313631/wheelhouse/numpy/numpy-1.8.1-cp27-none-linux_x86_64.whl
+  - pip install -t $PWD/tmp https://dl.dropboxusercontent.com/u/9313631/wheelhouse/scipy/scipy-0.14.0-cp27-none-linux_x86_64.whl
+  - pip install tox
+  - export PYTHONPATH=$PWD/tmp
 
 script:
-  - python setup.py install
-  - py.test tests
+  - tox
 
