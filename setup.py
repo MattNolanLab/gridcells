@@ -8,6 +8,19 @@ all_packages = [
         'gridcells.plotting',
 ]
 
+default_swig_opts = ['-builtin',
+                     '-O',
+                     '-ignoremissing',
+                     '-c++',
+                     '-Iexternal/armanpy/include',
+                     '-Isrc/include']
+field_ext = Extension('gridcells.analysis._fields',
+                            ['src/fields.cpp', 'src/fields.i'],
+                             swig_opts=default_swig_opts)
+common_ext = Extension('gridcells.core._common',
+                            ['src/common.cpp', 'src/common.i'],
+                            swig_opts=default_swig_opts)
+
 setup(
         name='gridcells',
         version='0.1dev',
@@ -15,15 +28,7 @@ setup(
         author='Lukas Solanka',
         author_email='lsolanka@gmail.com',
         packages=all_packages,
-        ext_modules=[Extension('gridcells.analysis._fields',
-                                    ['src/fields.cpp', 'src/fields.i'],
-                                     swig_opts=['-builtin',
-                                                '-O',
-                                                '-ignoremissing',
-                                                '-c++',
-                                                '-Iexternal/armanpy/include',
-                                                '-Isrc/include'])
-                    ],
+        ext_modules=[field_ext, common_ext],
         include_dirs=['src/include', 'external/armanpy/include',
                       'external/armadillo/include',
                       numpy.get_include()],
