@@ -10,9 +10,20 @@ throughout the package:
 
     Pair2D
     Position2D
+    twisted_torus_distance
 
 '''
+import os
+
 import numpy as np
+
+# Do not import when in RDT environment
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if not on_rtd:
+    from . import _common
+    from _common import divisor_mod
+else:
+    divisor_mod = None
 
 class Pair2D(object):
     '''A pair of ``x`` and ``y`` attributes.'''
@@ -59,4 +70,35 @@ class Position2D(Pair2D):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+
+def twisted_torus_distance(a, others, dim):
+    ''' Calculate a distance between ``a`` and ``others`` on a twisted torus.
+    
+    Take ``a`` which is a 2D position and others, which is a vector of 2D
+    positions and compute the distances between them based on the topology of
+    the twisted torus.
+    
+    If you just want to remap a function of (X, Y), set a==[[0, 0]].
+
+    Parameters
+    ----------
+    
+    a : :class:`Pair2D`
+        Specifies the initial position. ``a.x`` and ``a.y`` must be convertible
+        to floats
+    others : :class:`Pair2D`
+        Positions for which to compute the distance.
+    dim : :class:`Pair2D`
+        Dimensions of the torus. ``dim.x`` and ``dim.y`` must be convertible to
+        floats.
+
+    Returns
+    -------
+    An array of positions, always of the length of others
+    '''
+    return _common.twisted_torus_distance(
+            a.x, a.y,
+            others.x, others.y,
+            dim.x, dim.y)
 

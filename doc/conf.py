@@ -314,7 +314,7 @@ MOCK_MODULES = [
     'numpy', 'numpy.ma',
     'scipy', 'scipy.integrate', 'scipy.signal', 'scipy.ndimage',
     'scipy.ndimage.interpolation', 'scipy.optimize',
-    'matplotlib', 'matplotlib.axes', 'matplotlib.pyplot', 'matplotlib.patches'
+    'matplotlib', 'matplotlib.axes', 'matplotlib.pyplot', 'matplotlib.patches',
 ]
 if on_rtd:
     for mod_name in MOCK_MODULES:
