@@ -501,6 +501,79 @@
 %armanpy_vec_return_by_reference_typemaps( arma::cx_rowvec )
 %armanpy_vec_return_by_reference_typemaps( arma::cx_frowvec )
 
+
+//////////////////////////////////////////////////////////////////////////
+// Typemaps for return by pointer (Python takes ownership of the data!)
+// You MUST ensure that the method/function that returns your matrix as a
+// pointer can give up the reference entirely!
+//////////////////////////////////////////////////////////////////////////
+%define %armanpy_vec_return_by_pointer_typemaps( ARMA_MAT_TYPE )
+    %typemap( out, fragment="armanpy_vec_typemaps" )
+        ( ARMA_MAT_TYPE* )
+    {
+        npy_intp dims[1] = { 2 };
+        PyObject* array = PyArray_EMPTY(1, dims,
+                            ArmaTypeInfo< ARMA_MAT_TYPE>::type, true);
+        if ( !array ) {
+            PyErr_SetString( PyExc_TypeError, "Creation of 1-dimensional return array failed" );
+            return NULL;
+        }
+
+        armanpy_vec_as_numpy_with_shared_memory($1, array);
+        $result = SWIG_Python_AppendOutput($result, array);
+    }
+%enddef
+
+%armanpy_vec_return_by_pointer_typemaps( arma::Col< double > )
+%armanpy_vec_return_by_pointer_typemaps( arma::Col< float >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Col< int > )
+%armanpy_vec_return_by_pointer_typemaps( arma::Col< unsigned >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Col< arma::sword >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Col< arma::uword >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Col< arma::cx_double >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Col< arma::cx_float >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Col< std::complex< double > > )
+%armanpy_vec_return_by_pointer_typemaps( arma::Col< std::complex< float > > )
+%armanpy_vec_return_by_pointer_typemaps( arma::vec )
+%armanpy_vec_return_by_pointer_typemaps( arma::fvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::ivec )
+%armanpy_vec_return_by_pointer_typemaps( arma::uvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::uchar_vec )
+%armanpy_vec_return_by_pointer_typemaps( arma::u32_vec )
+%armanpy_vec_return_by_pointer_typemaps( arma::s32_vec )
+%armanpy_vec_return_by_pointer_typemaps( arma::cx_vec )
+%armanpy_vec_return_by_pointer_typemaps( arma::cx_fvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::colvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::fcolvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::icolvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::ucolvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::uchar_colvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::u32_colvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::s32_colvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::cx_colvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::cx_fcolvec )
+
+%armanpy_vec_return_by_pointer_typemaps( arma::Row< double > )
+%armanpy_vec_return_by_pointer_typemaps( arma::Row< float >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Row< int > )
+%armanpy_vec_return_by_pointer_typemaps( arma::Row< unsigned >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Row< arma::sword >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Row< arma::uword >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Row< arma::cx_double >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Row< arma::cx_float >  )
+%armanpy_vec_return_by_pointer_typemaps( arma::Row< std::complex< double > > )
+%armanpy_vec_return_by_pointer_typemaps( arma::Row< std::complex< float > > )
+%armanpy_vec_return_by_pointer_typemaps( arma::rowvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::frowvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::irowvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::urowvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::uchar_rowvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::u32_rowvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::s32_rowvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::cx_rowvec )
+%armanpy_vec_return_by_pointer_typemaps( arma::cx_frowvec )
+
+
 //////////////////////////////////////////////////////////////////////////
 // Typemaps for return by boost::shared_ptr< ... > functions/methods
 //////////////////////////////////////////////////////////////////////////
