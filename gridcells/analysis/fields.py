@@ -182,3 +182,12 @@ def extractSpikePositions(spikeTimes, positions):
     pos_y = _fields.extractSpikePos(spikeIdx, positions.y)
     return Pair2D(pos_x, pos_y), np.max(spikeIdx)
 
+
+def occupancy_prob_dist(arena, pos):
+    edges = arena.getDiscretisation()
+    dx = arena.getDiscretisationSteps()
+    xedges = np.hstack((edges.x, [edges.x[-1] + dx.x]))
+    yedges = np.hstack((edges.y, [edges.y[-1] + dx.y]))
+
+    H, _, _ = np.histogram2d(pos.x, pos.y, bins=[xedges, yedges], normed=False)
+    return (H / len(pos)).T
