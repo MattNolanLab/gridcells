@@ -12,6 +12,7 @@ Functions
 .. autosummary::
 
     gridnessScore
+    occupancy_prob_dist
     spatialAutoCorrelation
     spatialRateMap
 
@@ -184,6 +185,23 @@ def extractSpikePositions(spikeTimes, positions):
 
 
 def occupancy_prob_dist(arena, pos):
+    '''Calculate a probability distribution for animal positions in an arena.
+
+    Parameters
+    ----------
+    arena : :class:`~gridcells.core.arena.Arena`
+        Arena the animal was running in.
+    pos : :class:`~gridcells.core.common.Position2D`
+        Positions of the animal.
+
+    Returns
+    -------
+    dist : numpy.ndarray
+        Probability distribution for the positional data, given the
+        discretisation of the arena. The first dimension is the y axis, the
+        second dimension is the x axis. The shape of the distribution is equal
+        to the number of items in the discretised edges of the arena.
+    '''
     edges = arena.getDiscretisation()
     dx = arena.getDiscretisationSteps()
     xedges = np.hstack((edges.x, [edges.x[-1] + dx.x]))
