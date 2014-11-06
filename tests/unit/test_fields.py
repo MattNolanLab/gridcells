@@ -155,7 +155,7 @@ class TestSpikePosExtraction(object):
         np.testing.assert_equal(their_spike_pos.y, out_spike_pos.y)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def fix_pos_data(fix_arena):
     ar = fix_arena
 

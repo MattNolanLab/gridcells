@@ -18,6 +18,15 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
+
+def _inf_rate(rate_map, px):
+    '''A helper function for information rate.'''
+    tmp_map = np.ma.array(rate_map, copy=True)
+    tmp_map[np.isnan(tmp_map)] = 0
+    avg_rate = np.sum(np.ravel(tmp_map * px))
+    return (np.nansum(np.ravel(tmp_map * np.log2(tmp_map/avg_rate) * px)),
+            avg_rate)
+
 def information_rate(rate_map, px):
     '''Compute information rate of a cell given variable x.
 
@@ -50,8 +59,7 @@ def information_rate(rate_map, px):
        the Hippocampal Code. In Advances in Neural Information Processing
        Systems 5. pp. 1030-1037.
     '''
-    avg_rate = np.sum(np.ravel(rate_map * px))
-    return np.nansum(np.ravel(rate_map * np.log2(rate_map/avg_rate) * px))
+    return _inf_rate(rate_map, px)[0]
 
 
 def information_specificity(rate_map, px):
@@ -79,6 +87,5 @@ def information_specificity(rate_map, px):
        the Hippocampal Code. In Advances in Neural Information Processing
        Systems 5. pp. 1030-1037.
     '''
-    avg_rate = np.sum(np.ravel(rate_map * px))
-    I = np.nansum(np.ravel(rate_map * np.log2(rate_map/avg_rate) * px))
+    I, avg_rate = _inf_rate(rate_map, px)
     return I / avg_rate
