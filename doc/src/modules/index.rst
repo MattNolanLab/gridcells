@@ -11,4 +11,5 @@ Modules
     core.arena
     analysis.fields
     analysis.registration
+    analysis.info
     plotting.fields
