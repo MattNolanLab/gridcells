@@ -53,6 +53,10 @@ def information_rate(rate_map, px):
     If you need information in bits/spike, you need to divide the information
     rate by the average firing rate of the cell.
 
+    The firing rate map, in positions that are valid within the arena, may
+    contains NaN numbers. In that case, the firing rate in these positions in
+    ``rate_map`` will be set to 0.
+
     References
     ----------
     .. [1] Skaggs, W.E. et al., 1993. An Information-Theoretic Approach to Deciphering

@@ -52,7 +52,7 @@ class TestInformationRate(object):
 
     def test_nans(self):
         # Spikes in 1/4 of the arena, uniform occupancy
-        rate_map = np.array([10., 0., 0., 0.])
+        rate_map = np.array([10., 0., 0., np.nan])
         px = np.array([.25, .25, .25, .25])
         rate = information_rate(rate_map, px)
         spec = information_specificity(rate_map, px)
