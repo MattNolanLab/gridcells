@@ -5,6 +5,7 @@ import numpy as np
 from gridcells.core import Position2D
 from gridcells.core import CircularArena, Pair2D
 from gridcells.analysis import spatialRateMap, extractSpikePositions
+from gridcells.analysis import occupancy_prob_dist
 import fields_ref_impl as refimp
 
 
@@ -152,3 +153,33 @@ class TestSpikePosExtraction(object):
         their_spike_pos, m_i = extractSpikePositions(out_times, positions)
         np.testing.assert_equal(their_spike_pos.x, out_spike_pos.x)
         np.testing.assert_equal(their_spike_pos.y, out_spike_pos.y)
+
+
+@pytest.fixture(scope='function')
+def fix_pos_data(fix_arena):
+    ar = fix_arena
+
+    pos_x = np.random.rand(100000) * ar.sz.x / 2.
+    pos_y = np.random.rand(100000) * ar.sz.y / 2.
+    return Position2D(pos_x, pos_y, 0.02)
+
+
+@pytest.fixture(scope='module')
+def fix_arena():
+    arenaR = 90.    # cm
+    sigma = 3.      # cm
+    return CircularArena(arenaR, Pair2D(sigma, sigma))
+
+class TestOccupancyPDF(object):
+    '''Tests for Occupancy Probability density function computation'''
+
+    def test_output_shape(self, fix_arena, fix_pos_data):
+        arena = fix_arena
+        pos = fix_pos_data
+
+        edges = arena.getDiscretisation()
+
+        pdf = occupancy_prob_dist(arena, pos)
+        assert len(edges.x) == pdf.shape[0]
+        assert len(edges.y) == pdf.shape[1]
+        np.testing.assert_allclose(np.sum(np.ravel(pdf)), 1.)
