@@ -198,7 +198,8 @@ class GridArenaAxes(MplAxes):
         return ft, ift
 
     def spatial_rate_map(self, rate_map, scalebar=None, scaletext='cm',
-                         maxrate=True, g_score=None, **kwargs):
+                         maxrate=True, g_score=None, maxrate_fs='xx-small',
+                         **kwargs):
         '''
         Plot the spatial rate map in the specified arena.
 
@@ -216,6 +217,8 @@ class GridArenaAxes(MplAxes):
             Whether to print the max firing rate (top right corner)
         g_score : float, optional
             Grid score for this spatial rate map. If ``None``, plot nothing.
+        maxrate_fs : matplotlib font size identifier
+            Font size for maxrate.
         kwargs : kwargs
             Optional kwargs that will be passed to matplotlib's pcolormesh.
         '''
@@ -231,7 +234,7 @@ class GridArenaAxes(MplAxes):
         if (maxrate):
             r_str = '{0:.1f} Hz'.format(np.max(rate_map.flatten()))
             self.text(1.-self.default_margin, 1.025, r_str, ha="right",
-                      va='bottom', fontsize='xx-small',
+                      va='bottom', fontsize=maxrate_fs,
                       transform=self.transAxes)
         if (g_score is not None):
             if (int(g_score*100)/100.0 == int(g_score)):
