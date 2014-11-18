@@ -1,9 +1,10 @@
 import collections
 import numpy as np
-import unittest
 import pytest
 
 from gridcells.analysis.spikes import PopulationSpikes
+
+import base
 
 not_impl_msg = "Not implemented yet."
 
@@ -123,18 +124,19 @@ class TestSlidingFiringRate:
         np.testing.assert_allclose(rt, np.arange(3) * gen.dt)
 
 
-class TestPopulationSpikes(unittest.TestCase):
+class TestPopulationSpikes:
     '''
     Unit tests of :class:`analysis.spikes.PopulationSpikes`.
     '''
 
     def test_negative_n(self):
-        self.assertRaises(ValueError, PopulationSpikes, -10, [], [])
+        with pytest.raises(ValueError):
+            PopulationSpikes(-10, [], [])
 
     def test_zero_n(self):
         PopulationSpikes(0, [], [])
 
-    @unittest.skip(not_impl_msg)
+    @base.notimpl
     def test_avg_firing_rate(self):
         pass
 
@@ -158,14 +160,14 @@ class TestPopulationSpikes(unittest.TestCase):
         sp.spike_train_difference(range(n))
 
 
-class TestSpikeTrainDifference(unittest.TestCase):
+class TestSpikeTrainDifference:
 
     def test_full(self):
         # full must be True
         n = 10
         senders, times, sp = _create_test_sequence(0, n)
-        std = sp.spike_train_difference
-        self.assertRaises(NotImplementedError, std, 1, 10, False)
+        with pytest.raises(NotImplementedError):
+            sp.spike_train_difference(1, 10, False)
 
     def test_empty(self):
         # Empty spike trains
@@ -173,25 +175,26 @@ class TestSpikeTrainDifference(unittest.TestCase):
         senders, times, sp = _create_test_sequence(0, n)
         std = sp.spike_train_difference
         res = std(1, 2, True)
-        self.assertIsInstance(res, collections.Sequence)
-        self.assertEqual(len(res), 1)
-        self.assertEqual(res[0].shape[0], 0)
+        assert isinstance(res, collections.Sequence)
+        assert len(res) == 1
+        assert res[0].shape[0] == 0
 
     def test_out_of_bounds(self):
         # Out of bounds spike trains
         train_size = 100
         n = 100
         senders, times, sp = _create_test_sequence(train_size, n)
-        std = sp.spike_train_difference
 
-        self.assertRaises(IndexError, std, n, 1)
-        self.assertRaises(IndexError, std, 1, n)
+        with pytest.raises(IndexError):
+            sp.spike_train_difference(n, 1)
+        with pytest.raises(IndexError):
+            sp.spike_train_difference(1, n)
 
         # boundaries
-        std(n - 1, 1)
-        std(1, n - 1)
-        std(-1, 0)
-        std(0, -1)
+        sp.spike_train_difference(n - 1, 1)
+        sp.spike_train_difference(1, n - 1)
+        sp.spike_train_difference(-1, 0)
+        sp.spike_train_difference(0, -1)
 
     def test_result_length(self):
         train_size = 100
@@ -202,14 +205,14 @@ class TestSpikeTrainDifference(unittest.TestCase):
         # result length must be correct
         train_lens = [np.count_nonzero(senders == x) for x in xrange(n)]
         res = std(range(n), None, True)
-        self.assertEqual(len(res), n)
+        assert len(res) == n
         for nIdx in xrange(n):
-            self.assertEqual(len(res[nIdx]), n)
+            assert len(res[nIdx]) == n
 
         for n1 in xrange(n):
             for n2 in xrange(n):
                 expected_len = train_lens[n1] * train_lens[n2]
-                self.assertEqual(len(res[n1][n2]), expected_len)
+                assert len(res[n1][n2]) == expected_len
 
     def test_correct_values(self):
         train_size = 100
@@ -224,10 +227,10 @@ class TestSpikeTrainDifference(unittest.TestCase):
                 train2 = times[senders == n2]
                 diff = res[n1][n2]
                 expected_diff = _compute_output_sequence(train1, train2)
-                self.assertTrue(np.all(diff == expected_diff))
+                assert np.all(diff == expected_diff)
 
 
-class TestSpikeTrainXCorrelation(unittest.TestCase):
+class TestSpikeTrainXCorrelation:
 
     def test_bin_edges(self):
         train_size = 100
@@ -238,13 +241,13 @@ class TestSpikeTrainXCorrelation(unittest.TestCase):
 
         # trainLens = [np.count_nonzero(senders == x) for x in xrange(n)]
         res, bin_centers, bin_edges = xcf(range(n), None, (0, 1), bins)
-        self.assertEqual(bins, len(bin_edges) - 1)
-        self.assertEqual(len(bin_centers), bins)
+        assert bins == len(bin_edges) - 1
+        assert len(bin_centers) == bins
         for n1 in xrange(n):
             for n2 in xrange(n):
-                self.assertEqual(len(res[n1][n2]), bins)
+                assert len(res[n1][n2]) == bins
 
-    @unittest.skip(not_impl_msg)
+    @base.notimpl
     def test_correct_values(self):
         '''
         Since we are running this on numpy.histogram, it should be ok for
@@ -253,7 +256,7 @@ class TestSpikeTrainXCorrelation(unittest.TestCase):
         pass
 
 
-class TestISI(unittest.TestCase):
+class TestISI:
 
     def test_empty(self):
         # empty spike trains
@@ -261,9 +264,9 @@ class TestISI(unittest.TestCase):
         for nSpikes in [0, 1]:
             senders, times, sp = _create_test_sequence(nSpikes, n)
             res = sp.isi()
-            self.assertEqual(len(res), n)
+            assert len(res) == n
             for ISIs in res:
-                self.assertEqual(len(ISIs), 0)
+                assert len(ISIs) == 0
 
     def test_results_length(self):
         train_size = 101
@@ -271,7 +274,7 @@ class TestISI(unittest.TestCase):
         senders, times, sp = _create_test_sequence(train_size, n)
         res = sp.isi()
         for ISIs in res:
-            self.assertEqual(len(ISIs), train_size - 1)
+            assert len(ISIs) == train_size - 1
 
     def test_positive(self):
         train_size = 1000
@@ -279,7 +282,7 @@ class TestISI(unittest.TestCase):
         senders, times, sp = _create_test_sequence(train_size, n)
         res = sp.isi()
         for ISIs in res:
-            self.assertTrue(np.all(ISIs >= 0))
+            assert np.all(ISIs >= 0)
 
     def test_constant_isi(self):
         '''
@@ -294,10 +297,10 @@ class TestISI(unittest.TestCase):
             times = np.arange(train_size, dtype=float) * dt
             sp = PopulationSpikes(1, senders, times)
             res = sp.isi(n=0)
-            self.assertTrue(np.all(res[0] == dt))
+            assert np.all(res[0] == dt)
 
 
-class TestISICV(unittest.TestCase):
+class TestISICV:
 
     def test_empty(self):
         # empty spike trains
@@ -305,20 +308,20 @@ class TestISICV(unittest.TestCase):
         for nSpikes in [0, 1]:
             senders, times, sp = _create_test_sequence(nSpikes, n)
             res = sp.isi_cv()
-            self.assertEqual(len(res), n)
+            assert len(res) == n
 
     def test_results_length(self):
         train_size = 101
         n = 137
         senders, times, sp = _create_test_sequence(train_size, n)
         res = sp.isi_cv()
-        self.assertEqual(len(res), n)
+        assert len(res) == n
         for CV in res:
-            self.assertTrue(isinstance(CV, int) or isinstance(CV, float))
+            assert isinstance(CV, int) or isinstance(CV, float)
 
     def test_positive(self):
         train_size = 10
         n = 137
         senders, times, sp = _create_test_sequence(train_size, n)
         res = sp.isi_cv()
-        self.assertTrue(np.all(np.asarray(res >= 0)))
+        assert np.all(np.asarray(res >= 0))
