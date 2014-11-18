@@ -1,6 +1,7 @@
 import collections
 import numpy as np
 import unittest
+import pytest
 
 from gridcells.analysis.spikes import PopulationSpikes
 
@@ -30,6 +31,98 @@ def _create_test_sequence(train_size, n_trains):
     return senders, times, sp
 
 
+class SpikeGenerator:
+    class PopulationRateTestItem:
+        def __init__(self, pop, orig_nspikes, test_rates, tend):
+            self.pop = pop
+            self.orig_nspikes = orig_nspikes
+            self.test_rates = test_rates
+            self.tend = tend
+
+    def __init__(self, tstart, dt, winlen):
+        self.tstart = tstart
+        self.dt = dt
+        self.winlen = winlen
+
+    def get_test_vector(self, nspikes):
+        '''Generate test vector.
+
+        Generates a test vector in which every time step spikes are generated
+        according to ``nspikes``.
+
+        All times are in units of ms, except firing rates, which are in Hz.
+        '''
+        nspikes = np.asarray(nspikes)
+        nneurons, nt = nspikes.shape
+        spikes = np.array([], dtype=np.float)
+        senders = np.array([], dtype=np.int)
+
+        # Generate spikes and senders
+        t = self.tstart
+        for t_i in range(nt):
+            for n_i in range(nneurons):
+                sample = t + np.random.rand(nspikes[n_i, t_i]) * self.dt
+                spikes = np.hstack((spikes, sample))
+                senders = np.hstack((senders, [n_i] * len(sample)))
+            t += self.dt
+        to_sort = np.array(zip(senders, spikes), dtype=[('senders', 'f8'),
+                                                        ('spikes', 'f8')])
+        sorted_spikes = np.sort(to_sort, order='spikes')
+        pop = PopulationSpikes(nneurons, sorted_spikes['senders'],
+                               sorted_spikes['spikes'])
+
+        # Adjust nspikes to accomodate for winlen
+        test_rates = np.array(nspikes, dtype=np.float, copy=True)
+        ndt_winlen = int(self.winlen / self.dt)
+        for t_i in range(nt):
+            test_rates[:, t_i] = np.sum(nspikes[:, t_i:t_i + ndt_winlen],
+                                        axis=1) / self.winlen
+
+        tend = self.tstart + (nt - 1) * self.dt
+        test_rates *= 1e3  # Adjust timing to Hz
+        return self.PopulationRateTestItem(pop, nspikes, test_rates, tend)
+
+
+@pytest.fixture(params=[100., 200., 300.])
+def fix_spike_gen(request):
+    return SpikeGenerator(0, 100., request.param)
+
+
+class TestSlidingFiringRate:
+    def test_empty(self):
+        for N in range(0, 4):
+            pop = PopulationSpikes(N, [], [])
+            r, rt = pop.sliding_firing_rate(0, 1, .1, .2)
+            assert np.all(r == 0)
+
+    def test_rates(self, fix_spike_gen):
+        gen = fix_spike_gen
+
+        # Single neuron
+        item = gen.get_test_vector([[0, 1, 2]])
+        r, rt = item.pop.sliding_firing_rate(gen.tstart, item.tend, gen.dt,
+                                             gen.winlen)
+        np.testing.assert_allclose(r, item.test_rates)
+        np.testing.assert_allclose(rt, np.arange(3) * gen.dt)
+
+        # Single neuron, len = 4
+        item = gen.get_test_vector([[0, 1, 2, 6]])
+        r, rt = item.pop.sliding_firing_rate(gen.tstart, item.tend, gen.dt,
+                                             gen.winlen)
+        np.testing.assert_allclose(r, item.test_rates)
+        np.testing.assert_allclose(rt, np.arange(4) * gen.dt)
+
+        # 3 neurons, this should be enough to triangulate
+        item = gen.get_test_vector(
+            [[0, 1, 2],
+             [1, 2, 3],
+             [3, 2, 1]])
+        r, rt = item.pop.sliding_firing_rate(gen.tstart, item.tend, gen.dt,
+                                             gen.winlen)
+        np.testing.assert_allclose(r, item.test_rates)
+        np.testing.assert_allclose(rt, np.arange(3) * gen.dt)
+
+
 class TestPopulationSpikes(unittest.TestCase):
     '''
     Unit tests of :class:`analysis.spikes.PopulationSpikes`.
@@ -43,10 +136,6 @@ class TestPopulationSpikes(unittest.TestCase):
 
     @unittest.skip(not_impl_msg)
     def test_avg_firing_rate(self):
-        pass
-
-    @unittest.skip(not_impl_msg)
-    def test_sliding_firing_rate(self):
         pass
 
     def test_lists(self):
