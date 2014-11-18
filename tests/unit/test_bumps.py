@@ -1,4 +1,3 @@
-import unittest
 import numpy as np
 
 from gridcells.core import Pair2D, twisted_torus_distance
@@ -19,7 +18,7 @@ def gen_gaussian_tt(ampl, mu_x, mu_y, sigma, x, y):
     return np.reshape(g, (dim.y, dim.x))
 
 
-class TestFittingTT(unittest.TestCase):
+class TestFittingTT:
 
     '''Test all implemented functions/classes that require fitting a Gaussian
     on the twisted torus.
@@ -52,9 +51,6 @@ class TestFittingTT(unittest.TestCase):
         np.testing.assert_almost_equal(first, second,
                                        self.decimalAlmostEqual)
 
-    def setUp(self):
-        self.addTypeEqualityFunc(np.ndarray, self.assert_ndarray_almost_equal)
-
     def test_bump_fitting(self):
         dim = Pair2D(34, 30)
         x, y = np.meshgrid(np.arange(dim.x, dtype=float),
@@ -76,19 +72,16 @@ class TestFittingTT(unittest.TestCase):
 
             try:
                 e = est_params
-                first  = np.array([a,   mu_x,   mu_y,   sigma])
+                first  = np.array([a,     mu_x,   mu_y,   sigma])
                 second = np.array([e.A, e.mu_x, e.mu_y, e.sigma])
                 self.assert_ndarray_almost_equal(first, second)
                 # print noise_sigma, np.sqrt(1./e.lh_precision)
                 # print noise_sigma*self.noiseDeltaFrac
-                self.assertAlmostEqual(noise_sigma, np.sqrt(1. /
-                                       e.lh_precision), delta=noise_sigma *
-                                       self.noiseDeltaFrac)
-                self.assertTrue(isinstance(e.ln_lh, float) or
-                                isinstance(e.ln_lh, int),
-                                msg='Log likelihood must be either float or ' +
-                                    'int!')
-            except (AssertionError, self.failureException) as e:
+                np.testing.assert_allclose(
+                    noise_sigma, np.sqrt(1. / e.lh_precision),
+                    rtol=self.noiseDeltaFrac)
+                assert isinstance(e.ln_lh, float) or isinstance(e.ln_lh, int)
+            except AssertionError as e:
                 failures += 1
                 # print failures
                 # print('%s != \n%s within %r places' % (first, second,
@@ -96,7 +89,7 @@ class TestFittingTT(unittest.TestCase):
                 if failures / float(self.nIter) > self.maxFailures:
                     msg = '%.1f%%  fitting errors reached.' % (
                         self.maxFailures * 100)
-                    raise self.failureException(msg)
+                    assert False
 
     def test_maximum_lh(self):
         nvals = 100000
@@ -110,11 +103,10 @@ class TestFittingTT(unittest.TestCase):
             # print ml_fit.mu, ml_fit.sigma2, ml_fit.ln_lh
             # print mu, sigma
 
-            delta_mu = mu * self.noiseDeltaFrac
-            delta_sigma = sigma * self.noiseDeltaFrac
-            self.assertAlmostEqual(ml_fit.mu, mu, delta=delta_mu)
-            self.assertAlmostEqual(
-                np.sqrt(ml_fit.sigma2), sigma, delta=delta_sigma)
+            np.testing.assert_allclose(ml_fit.mu, mu, rtol=self.noiseDeltaFrac)
+            np.testing.assert_allclose(np.sqrt(ml_fit.sigma2), sigma,
+                                       rtol=self.noiseDeltaFrac)
             correct_ln_lh = - nvals / 2. * (1 + np.log(ml_fit.sigma2) +
                                             np.log(2 * np.pi)) - aic_correction
-            self.assertAlmostEqual(ml_fit.ln_lh, correct_ln_lh, delta=1e-9)
+            np.testing.assert_allclose(ml_fit.ln_lh, correct_ln_lh, atol=1e-9,
+                                       rtol=0)
