@@ -259,7 +259,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         Extract the senders and corresponding spike times for a raster plot.
 
         .. todo::
-        
+
             implement neuron_list
 
         Parameters
