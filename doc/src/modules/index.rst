@@ -12,4 +12,5 @@ Modules
     analysis.fields
     analysis.registration
     analysis.spikes
+    analysis.bumps
     plotting.fields
