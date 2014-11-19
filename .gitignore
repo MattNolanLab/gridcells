@@ -6,6 +6,8 @@
 *.swo
 *.pyc
 
+.ropeproject
+
 /.DS_Store
 
 /build

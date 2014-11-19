@@ -5,9 +5,12 @@
 
 Classes
 -------
+.. inheritance-diagram:: gridcells.analysis.spikes
+                         gridcells.analysis.bumps.SingleBumpPopulation
+    :parts: 2
+
 .. autosummary::
 
-    SpikeTrain
     PopulationSpikes
     TorusPopulationSpikes
     TwistedTorusSpikes
@@ -27,7 +30,6 @@ if not on_rtd:
     from . import _spikes
 
 __all__ = [
-    'SpikeTrain',
     'PopulationSpikes',
     'TorusPopulationSpikes',
     'TwistedTorusSpikes'
@@ -65,15 +67,15 @@ def sliding_firing_rate_tuple(spikes, n, tstart, tend, dt, win_len):
     dt = float(dt)
     win_len = float(win_len)
 
-    sz_rate     = int((tend - tstart) / dt) + 1
-    n_ids       = np.array(spikes[0])
+    sz_rate = int((tend - tstart) / dt) + 1
+    n_ids = np.array(spikes[0])             # pylint: disable=unused-variable
     spike_times = np.array(spikes[1])
-    len_spikes  = len(spike_times)
-    bit_spikes  = np.zeros((n, sz_rate))
-    fr          = np.zeros((n, sz_rate))
-    dt_wlen     = int(win_len / dt)
-    times       = np.arange(sz_rate) * dt
-    n           = int(n)
+    len_spikes = len(spike_times)           # pylint: disable=unused-variable
+    bit_spikes = np.zeros((n, sz_rate))     # pylint: disable=unused-variable
+    fr = np.zeros((n, sz_rate))
+    dt_wlen = int(win_len / dt)             # pylint: disable=unused-variable
+    times = np.arange(sz_rate) * dt
+    n = int(n)
 
     # print "max(n_ids): ", np.max(n_ids)
     # print 'sz_rate: ', sz_rate
@@ -101,10 +103,10 @@ def sliding_firing_rate_tuple(spikes, n, tstart, tend, dt, win_len):
             }
         """
 
-    err = weave.inline(
+    weave.inline(
         code,
         ['n', 'sz_rate', 'dt_wlen', 'len_spikes', 'n_ids', 'spike_times',
-            'tstart', 'dt', 'bit_spikes', 'fr'],
+         'tstart', 'dt', 'bit_spikes', 'fr'],
         type_converters=weave.converters.blitz,
         compiler='gcc',
         extra_compile_args=['-O3'],
@@ -113,15 +115,7 @@ def sliding_firing_rate_tuple(spikes, n, tstart, tend, dt, win_len):
     return fr / (win_len * 1e-3), times
 
 
-class SpikeTrain(object):
-    '''
-    A base class for handling spike trains.
-    '''
-    def __init__(self):
-        raise NotImplementedError()
-
-
-class PopulationSpikes(SpikeTrain, collections.Sequence):
+class PopulationSpikes(collections.Sequence):
     '''
     Class to handle a population of spikes and a set of methods to do analysis
     on the *whole* population.
@@ -138,16 +132,16 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             Spike times. The shape of this array must be the same as for
             `senders`.
         '''
-        self._N        = n
-        if (n < 0):
+        self._N = n
+        if n < 0:
             msg = "Number of neurons in the spike train must be " +\
                   "non-negative! Got {0}."
             raise ValueError(msg.format(n))
 
         # We are expecting senders and times as numpy arrays, if they are not,
         # convert them. Moreover, senders.dtype must be int, for indexing.
-        self._senders  = np.asarray(senders, dtype=int)
-        self._times    = np.asarray(times)
+        self._senders = np.asarray(senders, dtype=int)
+        self._times = np.asarray(times)
         self._unpacked = [None] * self._N  # unpacked version of spikes
 
     @property
@@ -175,12 +169,12 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         output : numpy array
             Firing rate in Hz for each neuron in the population.
         '''
-        result  = np.zeros((self._N, ))
-        times   = self._times
-        senders = self._senders
-        n       = int(self._N)
-        ts      = float(tstart)
-        te      = float(tend)
+        result = np.zeros((self._N, ))
+        times = self._times             # pylint: disable=unused-variable
+        senders = self._senders         # pylint: disable=unused-variable
+        n = int(self._N)                # pylint: disable=unused-variable
+        ts = float(tstart)              # pylint: disable=unused-variable
+        te = float(tend)                # pylint: disable=unused-variable
         code = '''
             for (int i = 0; i < senders.size(); i++)
             {
@@ -194,7 +188,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             }
         '''
 
-        err = weave.inline(
+        weave.inline(
             code,
             ['n', 'times', 'senders', 'ts', 'te', 'result'],
             type_converters=weave.converters.blitz,
@@ -249,7 +243,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             window.
         '''
         tstart = tlimits[0]
-        tend   = tlimits[1]
+        tend = tlimits[1]
         tidx = np.logical_and(self._times >= tstart, self._times <= tend)
         return PopulationSpikes(self._N, self._senders[tidx],
                                 self._times[tidx])
@@ -272,7 +266,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         output : a tuple
             A pair containing (senders, times).
         '''
-        if (neuron_list is not None):
+        if neuron_list is not None:
             raise NotImplementedError()
 
         return self._senders, self._times
@@ -323,26 +317,27 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         if not full:
             raise NotImplementedError()
 
-        if (reduce_fun is None):
+        if reduce_fun is None:
             reduce_fun = lambda x: x
 
-        if (not isinstance(idx1, collections.Iterable)):
+        if not isinstance(idx1, collections.Iterable):
             idx1 = [idx1]
 
-        if (idx2 is None):
+        if idx2 is None:
             idx2 = idx1
             res = [[] for x in idx1]
             for n1 in idx1:
                 for n2 in idx2:
                     # print n1, n2, len(self[n1]), len(self[n2])
-                    res[n1].append(reduce_fun(_spikes.spike_time_diff(self[n1],
-                                              self[n2])))
+                    res[n1].append(
+                        reduce_fun(
+                            _spikes.spike_time_diff(self[n1], self[n2])))
             return res
-        elif (not isinstance(idx2, collections.Iterable)):
+        elif not isinstance(idx2, collections.Iterable):
             idx2 = [idx2]
 
         # Two arrays of pairs
-        if (len(idx1) != len(idx2)):
+        if len(idx1) != len(idx2):
             raise TypeError('Length of neuron indexes do not match!')
 
         res = [None] * len(idx1)
@@ -353,6 +348,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         return res
 
     class CallableHistogram(object):
+        '''Callable class that computes a histogram.'''
         def __init__(self, **kw):
             self.kw = kw
 
@@ -365,10 +361,11 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             return res
 
         def get_bin_edges(self):
+            '''Calculate bin edges.'''
             _, bin_edges = np.histogram([], **self.kw)
             return bin_edges
 
-    def spike_train_xcorr(self, idx1, idx2, range, bins=50, **kw):
+    def spike_train_xcorr(self, idx1, idx2, lag_range, bins=50, **kw):
         '''
         Compute the spike train crosscorrelation function for all pairs of
         spike trains in the population.
@@ -384,7 +381,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         idx2 : int, or a sequence of ints, or None
             Index of the second neuron or a list of indexes for the second set
             of spike trains.
-        range : (lag_start, lag_end)
+        lag_range : (lag_start, lag_end)
             Limits of the cross-correlation function. The bins will always be
             **centered** on the values.
         bins : int, optional
@@ -397,8 +394,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
         output : a 2D or 1D list
             See :meth:`~PopulationSpikes.spike_train_difference`.
         '''
-        lag_start = range[0]
-        lag_end   = range[1]
+        lag_start, lag_end = lag_range
         bin_width = (lag_end - lag_start) / (bins - 1)
         bin_edges = np.linspace(lag_start - bin_width / 2.0, lag_end +
                                 bin_width / 2.0, bins + 1)
@@ -422,7 +418,7 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             your spike times (per each neuron).
         '''
         spikes = self[n]
-        if (len(spikes) < 2):
+        if len(spikes) < 2:
             return np.array([])
         return spikes[1:] - spikes[0:-1]
 
@@ -450,14 +446,14 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             A list of outputs (depending on parameters) for each neuron, even
             if ``n`` is an int.
         '''
-        if (reduce_fun is None):
+        if reduce_fun is None:
             reduce_fun = lambda x: x
 
         res = []
-        if (n is None):
+        if n is None:
             for n_id in xrange(len(self)):
                 res.append(reduce_fun(self.isi_neuron(n_id)))
-        elif (isinstance(n, int)):
+        elif isinstance(n, int):
             res.append(reduce_fun(self.isi_neuron(n)))
         else:
             for n_id in n:
@@ -478,10 +474,10 @@ class PopulationSpikes(SpikeTrain, collections.Sequence):
             variation. If ``None``, use the whole range.
         '''
         cvfunc = scipy.stats.variation
-        if (win_len is None):
+        if win_len is None:
             f = scipy.stats.variation
         elif (isinstance(win_len, collections.Sequence) or
-                isinstance(win_len, np.ndarray)):
+              isinstance(win_len, np.ndarray)):
             f = lambda x: np.asarray([cvfunc(x[x <= wl]) for wl in win_len])
         else:
             f = lambda x: cvfunc(x[x <= win_len])
@@ -511,12 +507,15 @@ class TorusPopulationSpikes(PopulationSpikes):
         PopulationSpikes.__init__(self, n, senders, times)
 
     def get_x_size(self):
+        '''Horizontal size of the torus.'''
         return self._sheetSize[0]
 
     def get_y_size(self):
+        '''Vertical size of the torus.'''
         return self._sheetSize[1]
 
     def get_dimensions(self):
+        '''Size of the torus.'''
         return self._sheetSize
 
     nx = property(fget=get_x_size, doc='Horizontal size of the torus')
@@ -556,7 +555,7 @@ class TorusPopulationSpikes(PopulationSpikes):
         '''
         sheet_size_x = self.get_x_size()
         sheet_size_y = self.get_y_size()
-        n = sheet_size_x * sheet_size_y
+        # n = sheet_size_x * sheet_size_y
 
         F, tsteps = PopulationSpikes.sliding_firing_rate(self, tstart, tend,
                                                          dt, win_len)

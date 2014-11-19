@@ -44,6 +44,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
+    'sphinx.ext.inheritance_diagram',
     'numpydoc',
 ]
 
@@ -285,6 +286,9 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 
+# inheritance
+inheritance_graph_attrs = dict(rankdir="TB", fontsize=14, ratio='compress')
+graphviz_output_format = 'svg'
 
 
 ##############################################################################
