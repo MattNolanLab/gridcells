@@ -116,10 +116,7 @@ def sliding_firing_rate_tuple(spikes, n, tstart, tend, dt, win_len):
 
 
 class PopulationSpikes(collections.Sequence):
-    '''
-    Class to handle a population of spikes and a set of methods to do analysis
-    on the *whole* population.
-    '''
+    '''Abstraction of a population of spikes.'''
     def __init__(self, n, senders, times):
         '''
         Parameters
