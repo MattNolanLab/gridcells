@@ -290,6 +290,8 @@ texinfo_documents = [
 inheritance_graph_attrs = dict(rankdir="TB", fontsize=14, ratio='compress')
 graphviz_output_format = 'svg'
 
+# -- Options for autodoc -----------------------------------------------------
+autoclass_content = 'both'
 
 ##############################################################################
 class Mock(object):

@@ -1,15 +1,18 @@
+'''Test bump fitting procedures.'''
+from __future__ import absolute_import, print_function, division
+
 import numpy as np
 
 from gridcells.core import Pair2D, twisted_torus_distance
-from gridcells.analysis.bumps import fit_gaussian_bump_tt, fit_maximum_lh
+from gridcells.analysis.bumps import (fit_gaussian_bump_tt, fit_maximum_lh,
+                                      SingleBumpPopulation, MLGaussianFitList,
+                                      MLFitList)
 
-notImplMsg = "Not implemented"
+from base import notimpl
 
-
-##############################################################################
-# Gaussian fitting on the twisted torus
 
 def gen_gaussian_tt(ampl, mu_x, mu_y, sigma, x, y):
+    '''Generate a Gaussian function on a twisted torus.'''
     dim = Pair2D(x.shape[1], x.shape[0])
     first = Pair2D(mu_x, mu_y)
     second = Pair2D(x.ravel(), y.ravel())
@@ -18,7 +21,7 @@ def gen_gaussian_tt(ampl, mu_x, mu_y, sigma, x, y):
     return np.reshape(g, (dim.y, dim.x))
 
 
-class TestFittingTT:
+class TestFittingTT(object):
 
     '''Test all implemented functions/classes that require fitting a Gaussian
     on the twisted torus.
@@ -46,17 +49,14 @@ class TestFittingTT:
     maxFailures = .02
     maxNoiseSigma = 1e-3
 
-    def assert_ndarray_almost_equal(self, first, second, msg=None):
-        # print first, second
-        np.testing.assert_almost_equal(first, second,
-                                       self.decimalAlmostEqual)
-
     def test_bump_fitting(self):
+        '''Test fitting of single bump on the twisted torus.'''
         dim = Pair2D(34, 30)
-        x, y = np.meshgrid(np.arange(dim.x, dtype=float),
-                           np.arange(dim.y, dtype=float))
+        x, y = np.meshgrid(  # pylint: disable=unbalanced-tuple-unpacking
+            np.arange(dim.x, dtype=float), np.arange(dim.y, dtype=float))
+
         failures = 0
-        for it in xrange(self.nIter):
+        for _ in range(self.nIter):
             a = np.random.rand() * self.gaussianAMax
             mu_x = np.random.rand() * dim.x
             mu_y = np.random.rand() * dim.y
@@ -64,9 +64,9 @@ class TestFittingTT:
                 np.random.rand() * (np.min((dim.x, dim.y)) / 4 - self.minSigma)
             noise_sigma = np.random.rand() * self.maxNoiseSigma * a
 
-            our_g = gen_gaussian_tt(a, mu_x, mu_y, sigma, x, y) + \
-                np.random.randn(dim.y, dim.x) * noise_sigma
-            est_params = fit_gaussian_bump_tt(our_g)
+            est_params = fit_gaussian_bump_tt(
+                (gen_gaussian_tt(a, mu_x, mu_y, sigma, x, y) +
+                 np.random.randn(dim.y, dim.x) * noise_sigma))
             est_params.A = np.abs(est_params.A)
             est_params.sigma = np.abs(est_params.sigma)
 
@@ -74,7 +74,8 @@ class TestFittingTT:
                 e = est_params
                 first  = np.array([a,     mu_x,   mu_y,   sigma])
                 second = np.array([e.A, e.mu_x, e.mu_y, e.sigma])
-                self.assert_ndarray_almost_equal(first, second)
+                np.testing.assert_almost_equal(first, second,
+                                               self.decimalAlmostEqual)
                 # print noise_sigma, np.sqrt(1./e.lh_precision)
                 # print noise_sigma*self.noiseDeltaFrac
                 np.testing.assert_allclose(
@@ -87,14 +88,15 @@ class TestFittingTT:
                 # print('%s != \n%s within %r places' % (first, second,
                 #    self.decimalAlmostEqual))
                 if failures / float(self.nIter) > self.maxFailures:
-                    msg = '%.1f%%  fitting errors reached.' % (
-                        self.maxFailures * 100)
+                    print('%.1f%%  fitting errors reached.' % (self.maxFailures
+                                                               * 100))
                     assert False
 
     def test_maximum_lh(self):
+        '''Test computation of maximum likelihood estimator.'''
         nvals = 100000
         aic_correction = 2
-        for it in xrange(self.nIter):
+        for _ in range(self.nIter):
             mu = np.random.rand() * self.gaussianAMax
             sigma = np.random.rand() * np.sqrt(mu)
             our_data = sigma * np.random.randn(nvals) + mu
@@ -110,3 +112,41 @@ class TestFittingTT:
                                             np.log(2 * np.pi)) - aic_correction
             np.testing.assert_allclose(ml_fit.ln_lh, correct_ln_lh, atol=1e-9,
                                        rtol=0)
+
+
+class TestSingleBumpPopulation(object):
+    '''Tests of SingleBumpPopulation.'''
+
+    def test_interface(self):
+        '''Test interfaces.'''
+        tstart = 0.
+        dt = 100.
+        win_len = 200.
+
+        pop = SingleBumpPopulation([], [], [10, 10])
+
+        # One item
+        tend = 0
+        fits_gauss = pop.bump_position(tstart, tend, dt, win_len)
+        fits_uni = pop.uniform_fit(tstart, tend, dt, win_len)
+        assert isinstance(fits_gauss, MLGaussianFitList)
+        assert isinstance(fits_uni, MLFitList)
+        assert len(fits_gauss) == 1
+        assert len(fits_uni) == 1
+
+        # 11 items
+        tend = 1e3
+        fits_gauss = pop.bump_position(tstart, tend, dt, win_len)
+        fits_uni = pop.uniform_fit(tstart, tend, dt, win_len)
+        assert len(fits_gauss) == 11
+        assert len(fits_uni) == 11
+
+    @notimpl
+    def test_bump_position(self):
+        '''Test consecutive bump positions.'''
+        pass
+
+    @notimpl
+    def test_uniform_fit(self):
+        '''Test consecutive uniform fits.'''
+        pass

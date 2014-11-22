@@ -325,13 +325,14 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
     '''
     A population of neurons that is supposed to form a bump on a twisted torus.
 
-    This class contains methods for processing  the population activity over
-    time. See also parent classes.
-
-    .. autosummary::
-
-        bump_position
-        uniform_fit
+    Parameters
+    ----------
+    senders : array_like
+        A an array of neurons' IDs.
+    times : array_like
+        An array of spike times. Length must be the same as as <senders>.
+    sheet_size : A pair
+        A pair of X and Y dimensions of the torus.
     '''
 
     def __init__(self, senders, times, sheet_size):
