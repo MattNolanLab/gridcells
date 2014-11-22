@@ -21,6 +21,16 @@ common_ext = Extension('gridcells.core._common',
                             ['src/common.cpp', 'src/common.i'],
                             swig_opts=default_swig_opts)
 
+spikes_ext = Extension('gridcells.analysis._spikes',
+                            ['src/spikes.cpp', 'src/spikes.i'],
+                            swig_opts=default_swig_opts)
+
+all_extensions = [
+    field_ext,
+    common_ext,
+    spikes_ext
+]
+
 setup(
         name='gridcells',
         version='0.1dev',
@@ -28,7 +38,7 @@ setup(
         author='Lukas Solanka',
         author_email='lsolanka@gmail.com',
         packages=all_packages,
-        ext_modules=[field_ext, common_ext],
+        ext_modules=all_extensions,
         include_dirs=['src/include', 'external/armanpy/include',
                       'external/armadillo/include',
                       numpy.get_include()],

@@ -9,6 +9,7 @@ before_install:
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran
   - sudo apt-get install -qq swig
   - if [ $TOXENV == "doc" ]; then sudo apt-get install -qq libfreetype6-dev libpng12-dev; fi
+  - if [ $TOXENV == "doc" -o $TOXENV == "rtd" ]; then sudo apt-get install graphviz; fi
 
 install:
   - pip install --upgrade setuptools
