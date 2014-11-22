@@ -14,9 +14,19 @@
 // objects such that they can be used as base objects of numpy arrays
 //
 
+#if PY_VERSION_HEX >= 0x03000000
+
+#define INIT_ARMA_CAPSULE( MatT )  \
+    ArmaCapsulePyType< MatT >::object.tp_new = PyType_GenericNew; \
+    if (PyType_Ready(&ArmaCapsulePyType< MatT >::object) < 0) return NULL;
+
+#else
+
 #define INIT_ARMA_CAPSULE( MatT )  \
     ArmaCapsulePyType< MatT >::object.tp_new = PyType_GenericNew; \
     if (PyType_Ready(&ArmaCapsulePyType< MatT >::object) < 0) return;
+
+#endif
 
 template< typename MatT >
 struct ArmaCapsule {
@@ -43,8 +53,7 @@ private:
 
 
 template< typename MatT > PyTypeObject ArmaCapsulePyType<MatT>::object = { \
-    PyObject_HEAD_INIT(NULL)   \
-    0, /*ob_size*/             \
+    PyVarObject_HEAD_INIT(NULL, 0) /*ob_size*/ \
     "ArmaCapsule", /*tp_name*/ \
     sizeof( ArmaCapsule< MatT > ), /*tp_basicsize*/ \
     0, /*tp_itemsize*/ \
