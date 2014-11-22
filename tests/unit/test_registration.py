@@ -19,7 +19,7 @@ def ntests():
 def position_generator(arena, npos, ntests):
     return UrandPositionGenerator(arena, npos, ntests)
 
-@pytest.fixture(scope='module', params=range(10, 200, 10))
+@pytest.fixture(scope='module', params=list(range(10, 200, 10)))
 def arena(request):
     return SquareArena(request.param, None)
 

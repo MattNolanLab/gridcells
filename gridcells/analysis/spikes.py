@@ -338,7 +338,7 @@ class PopulationSpikes(collections.Sequence):
             raise TypeError('Length of neuron indexes do not match!')
 
         res = [None] * len(idx1)
-        for n in xrange(len(idx1)):
+        for n in range(len(idx1)):
             res[n] = reduce_fun(_spikes.spike_time_diff(self[idx1[n]],
                                                         self[idx2[n]]))
 
@@ -448,7 +448,7 @@ class PopulationSpikes(collections.Sequence):
 
         res = []
         if n is None:
-            for n_id in xrange(len(self)):
+            for n_id in range(len(self)):
                 res.append(reduce_fun(self.isi_neuron(n_id)))
         elif isinstance(n, int):
             res.append(reduce_fun(self.isi_neuron(n)))
@@ -562,7 +562,7 @@ class TorusPopulationSpikes(PopulationSpikes):
                    (x - sheet_size_x / 2) / sheet_size_x * 2 * np.pi).ravel()
         y = np.exp(1j *
                    (y - sheet_size_y / 2) / sheet_size_y * 2 * np.pi).ravel()
-        for t_it in xrange(len(tsteps)):
+        for t_it in range(len(tsteps)):
             p[t_it, 0] = np.dot(F[:, t_it], x)
             p[t_it, 1] = np.dot(F[:, t_it], y)
 

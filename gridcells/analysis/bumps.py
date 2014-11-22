@@ -343,7 +343,7 @@ class SingleBumpPopulation(spikes.TwistedTorusSpikes):
         '''Perform the fit given the requested ``fit_callable``.'''
         F, Ft = self.sliding_firing_rate(tstart, tend, dt, win_len)
         res = list_cls()
-        for tIdx in xrange(len(Ft)):
+        for tIdx in range(len(Ft)):
             LOGGER.debug('%s:: fitting: %d/%d, %.3f/%.3f ',
                          fit_callable.__name__, tIdx + 1, len(Ft), Ft[tIdx],
                          Ft[-1])

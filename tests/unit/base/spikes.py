@@ -43,7 +43,7 @@ class RateDefinedSpikeGenerator(object):
                 spikes = np.hstack((spikes, sample))
                 senders = np.hstack((senders, [n_i] * len(sample)))
             t += self.dt
-        to_sort = np.array(zip(senders, spikes), dtype=[('senders', 'f8'),
+        to_sort = np.array(list(zip(senders, spikes)), dtype=[('senders', 'f8'),
                                                         ('spikes', 'f8')])
         sorted_spikes = np.sort(to_sort, order='spikes')
         pop = PopulationSpikes(nneurons, sorted_spikes['senders'],

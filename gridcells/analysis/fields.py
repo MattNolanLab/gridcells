@@ -158,7 +158,7 @@ def gridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
     autoCorr[np.sqrt(X**2 + Y**2) < corr_cutRmin] = 0
     
     da = 3
-    angles = range(0, 180+da, da)
+    angles = list(range(0, 180+da, da))
     crossCorr = []
     # Rotate and compute correlation coefficient
     for angle in angles:

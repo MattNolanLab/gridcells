@@ -8,7 +8,7 @@ from gridcells.core import (Pair2D, Position2D, divisor_mod,
                             twisted_torus_distance)
 
 
-@pytest.fixture(scope='module', params=[0, 1, 2, 3, 10] + range(20, 110, 10))
+@pytest.fixture(scope='module', params=[0, 1, 2, 3, 10] + list(range(20, 110, 10)))
 def possize(request):
     return request.param
 
