@@ -62,22 +62,24 @@ class UrandPositionGenerator(object):
 
     def _inject_outliers(self, pos, offsets):
         sz = len(pos)
-        n_outliers = sz*self.outlier_fraction
+        n_outliers = int(sz*self.outlier_fraction)
         idx_list = np.random.choice(np.arange(sz),
                                     size=n_outliers,
                                     replace=False)
         outlier_range = Pair2D(self.arena.getSize().x * self.max_outlier_range,
                                self.arena.getSize().y * self.max_outlier_range)
-        pos.x[idx_list[0:n_outliers/4]] = (
-                offsets.x - np.random.rand(n_outliers/4)*outlier_range.x)
-        pos.x[idx_list[n_outliers/4:n_outliers/2]] = (
-                self.arena.getSize().x + offsets.x +
-                np.random.rand(n_outliers/4)*outlier_range.x)
-        pos.y[idx_list[n_outliers/2:n_outliers/4*3]] = ( 
-                offsets.y - np.random.rand(n_outliers/4)*outlier_range.y)
-        pos.y[idx_list[n_outliers/4*3:]] = (
-                self.arena.getSize().y + offsets.y +
-                np.random.rand(n_outliers/4)*outlier_range.y)
+        div = int(n_outliers/4)
+        pos.x[idx_list[0:div]] = (offsets.x -
+                                  np.random.rand(div)*outlier_range.x)
+        pos.x[idx_list[div:div * 2]] = (
+            self.arena.getSize().x + offsets.x +
+            np.random.rand(div)*outlier_range.x
+        )
+        pos.y[idx_list[div * 2:div * 3]] = (
+            offsets.y - np.random.rand(div)*outlier_range.y)
+        pos.y[idx_list[div*3:]] = (
+            self.arena.getSize().y + offsets.y +
+            np.random.rand(div)*outlier_range.y)
 
     def all_data(self):
         for it in range(self.ntests):
@@ -88,7 +90,7 @@ class UrandPositionGenerator(object):
                              self.dt)
             self._inject_outliers(pos, offsets)
             yield self.Data(pos, offsets)
-            
+
 
 class TestRegistration(object):
     '''Test the whole registration process.

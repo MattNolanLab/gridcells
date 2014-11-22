@@ -273,4 +273,4 @@ class TestISICV:
         n = 137
         senders, times, sp = _create_test_sequence(train_size, n)
         res = sp.isi_cv()
-        assert np.all(np.asarray(res >= 0))
+        assert np.all(np.asarray(res) >= 0)
