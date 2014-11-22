@@ -13,6 +13,8 @@ throughout the package:
     twisted_torus_distance
 
 '''
+from __future__ import absolute_import, print_function
+
 import os
 
 import numpy as np
@@ -21,7 +23,7 @@ import numpy as np
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if not on_rtd:
     from . import _common
-    from _common import divisor_mod
+    from ._common import divisor_mod
 else:
     divisor_mod = None
 
@@ -74,16 +76,16 @@ class Position2D(Pair2D):
 
 def twisted_torus_distance(a, others, dim):
     ''' Calculate a distance between ``a`` and ``others`` on a twisted torus.
-    
+
     Take ``a`` which is a 2D position and others, which is a vector of 2D
     positions and compute the distances between them based on the topology of
     the twisted torus.
-    
+
     If you just want to remap a function of (X, Y), set a==[[0, 0]].
 
     Parameters
     ----------
-    
+
     a : :class:`Pair2D`
         Specifies the initial position. ``a.x`` and ``a.y`` must be convertible
         to floats
