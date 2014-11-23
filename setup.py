@@ -9,6 +9,7 @@ all_packages = [
 ]
 
 default_swig_opts = ['-builtin',
+                     '-Wall',
                      '-O',
                      '-ignoremissing',
                      '-c++',

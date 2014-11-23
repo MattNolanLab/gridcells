@@ -41,7 +41,7 @@ class TestFittingTT(object):
         Also, log-likelihood tests would be useful
     '''
     decimalAlmostEqual = 1
-    noiseDeltaFrac = 1e-1
+    noiseDeltaFrac = 2e-1
 
     gaussianAMax = 40
     nIter = 1000

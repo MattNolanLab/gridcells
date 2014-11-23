@@ -85,9 +85,32 @@ class TestPopulationSpikes:
     def test_zero_n(self):
         PopulationSpikes(0, [], [])
 
-    @base.notimpl
     def test_avg_firing_rate(self):
-        pass
+        '''Test computation of the average firing rate.'''
+
+        # Test zero neurons
+        pop = PopulationSpikes(0, [], [])
+        rates = pop.avg_firing_rate(0, 1e3)
+        assert rates.size == 0
+
+        # Test one neuron
+        pop = PopulationSpikes(1, [0, 0, 0, 0], [0., 100, 200, 300])
+        rates = pop.avg_firing_rate(0, 1e3)
+        assert len(rates.shape) == 1
+        assert rates[0] == 4.
+
+        # Test two neurons
+        pop = PopulationSpikes(2, [0, 1, 0, 1, 0, 1, 0], [0., 50, 100, 150, 200,
+                                                          250, 300])
+        rates = pop.avg_firing_rate(0, 1e3)
+        assert len(rates.shape) == 1
+        np.testing.assert_allclose(rates, [4., 3.])
+
+        # tend < tstart
+        pop = PopulationSpikes(2, [0, 1, 0, 1, 0, 1, 0], [0., 50, 100, 150, 200,
+                                                          250, 300])
+        with pytest.raises(ValueError):
+            rates = pop.avg_firing_rate(1e3, 0)
 
     def test_lists(self):
         train_size = 100

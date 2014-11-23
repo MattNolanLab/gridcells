@@ -25,6 +25,22 @@ namespace grids {
  */
 arma::vec* spike_time_diff(const arma::vec &train1, const arma::vec &train2);
 
+arma::mat* sliding_firing_rate_base(const arma::Col<long> &n_ids,
+                                    const arma::vec &spike_t,
+                                    unsigned n_neurons,
+                                    double tstart,
+                                    double tend,
+                                    double dt,
+                                    double win_len);
+
+arma::vec sliding_times(double tstart, double tend, double dt);
+
+arma::vec* avg_fr(const arma::Col<long> &n_ids,
+                  const arma::vec &spike_t,
+                  unsigned n_neurons,
+                  double tstart,
+                  double tend);
+
 } // namespace grids
 
 #endif // SPIKES_H
