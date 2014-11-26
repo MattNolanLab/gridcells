@@ -45,8 +45,8 @@ def SNSpatialRate2D(spikeTimes, rat_pos_x, rat_pos_y, dt, arenaDiam, h):
 
     rateMap = np.zeros((len(xedges), len(yedges)))
 
-    for x_i in xrange(len(xedges)):
-        for y_i in xrange(len(yedges)):
+    for x_i in range(len(xedges)):
+        for y_i in range(len(yedges)):
             x = xedges[x_i]
             y = yedges[y_i]
             isNearTrack = np.count_nonzero(np.sqrt((rat_pos_x - x)**2 + (rat_pos_y - y)**2) <= h) > 0
@@ -96,7 +96,7 @@ def cellGridnessScore(rateMap, arenaDiam, h, corr_cutRmin):
     autoCorr[np.sqrt(X**2 + Y**2) < corr_cutRmin] = 0
     
     da = 3
-    angles = range(0, 180+da, da)
+    angles = list(range(0, 180+da, da))
     crossCorr = []
     # Rotate and compute correlation coefficient
     for angle in angles:

@@ -85,9 +85,32 @@ class TestPopulationSpikes:
     def test_zero_n(self):
         PopulationSpikes(0, [], [])
 
-    @base.notimpl
     def test_avg_firing_rate(self):
-        pass
+        '''Test computation of the average firing rate.'''
+
+        # Test zero neurons
+        pop = PopulationSpikes(0, [], [])
+        rates = pop.avg_firing_rate(0, 1e3)
+        assert rates.size == 0
+
+        # Test one neuron
+        pop = PopulationSpikes(1, [0, 0, 0, 0], [0., 100, 200, 300])
+        rates = pop.avg_firing_rate(0, 1e3)
+        assert len(rates.shape) == 1
+        assert rates[0] == 4.
+
+        # Test two neurons
+        pop = PopulationSpikes(2, [0, 1, 0, 1, 0, 1, 0], [0., 50, 100, 150, 200,
+                                                          250, 300])
+        rates = pop.avg_firing_rate(0, 1e3)
+        assert len(rates.shape) == 1
+        np.testing.assert_allclose(rates, [4., 3.])
+
+        # tend < tstart
+        pop = PopulationSpikes(2, [0, 1, 0, 1, 0, 1, 0], [0., 50, 100, 150, 200,
+                                                          250, 300])
+        with pytest.raises(ValueError):
+            rates = pop.avg_firing_rate(1e3, 0)
 
     def test_lists(self):
         train_size = 100
@@ -97,7 +120,7 @@ class TestPopulationSpikes:
         sp = PopulationSpikes(n, senders, times)
 
         # try to retrieve spike trains
-        for nIdx in xrange(n):
+        for nIdx in range(n):
             train = sp[nIdx]
             assert train is not None
 
@@ -106,7 +129,7 @@ class TestPopulationSpikes:
         sp.sliding_firing_rate(0, 1, 0.05, 0.1)
         sp.windowed((0, 1))
         sp.raster_data()
-        sp.spike_train_difference(range(n))
+        sp.spike_train_difference(list(range(n)))
 
 
 class TestSpikeTrainDifference:
@@ -152,14 +175,14 @@ class TestSpikeTrainDifference:
         std = sp.spike_train_difference
 
         # result length must be correct
-        train_lens = [np.count_nonzero(senders == x) for x in xrange(n)]
-        res = std(range(n), None, True)
+        train_lens = [np.count_nonzero(senders == x) for x in range(n)]
+        res = std(list(range(n)), None, True)
         assert len(res) == n
-        for nIdx in xrange(n):
+        for nIdx in range(n):
             assert len(res[nIdx]) == n
 
-        for n1 in xrange(n):
-            for n2 in xrange(n):
+        for n1 in range(n):
+            for n2 in range(n):
                 expected_len = train_lens[n1] * train_lens[n2]
                 assert len(res[n1][n2]) == expected_len
 
@@ -168,11 +191,11 @@ class TestSpikeTrainDifference:
         n = 50
         senders, times, sp = _create_test_sequence(train_size, n)
         std = sp.spike_train_difference
-        res = std(range(n), None, True)
+        res = std(list(range(n)), None, True)
 
-        for n1 in xrange(n):
+        for n1 in range(n):
             train1 = times[senders == n1]
-            for n2 in xrange(n):
+            for n2 in range(n):
                 train2 = times[senders == n2]
                 diff = res[n1][n2]
                 expected_diff = _compute_output_sequence(train1, train2)
@@ -189,11 +212,11 @@ class TestSpikeTrainXCorrelation:
         xcf = sp.spike_train_xcorr
 
         # trainLens = [np.count_nonzero(senders == x) for x in xrange(n)]
-        res, bin_centers, bin_edges = xcf(range(n), None, (0, 1), bins)
+        res, bin_centers, bin_edges = xcf(list(range(n)), None, (0, 1), bins)
         assert bins == len(bin_edges) - 1
         assert len(bin_centers) == bins
-        for n1 in xrange(n):
-            for n2 in xrange(n):
+        for n1 in range(n):
+            for n2 in range(n):
                 assert len(res[n1][n2]) == bins
 
     @base.notimpl
@@ -241,7 +264,7 @@ class TestISI:
         '''
         max_size = 1011
         dt = 0.25
-        for train_size in xrange(2, max_size):
+        for train_size in range(2, max_size):
             senders = [0] * train_size
             times = np.arange(train_size, dtype=float) * dt
             sp = PopulationSpikes(1, senders, times)
@@ -273,4 +296,4 @@ class TestISICV:
         n = 137
         senders, times, sp = _create_test_sequence(train_size, n)
         res = sp.isi_cv()
-        assert np.all(np.asarray(res >= 0))
+        assert np.all(np.asarray(res) >= 0)

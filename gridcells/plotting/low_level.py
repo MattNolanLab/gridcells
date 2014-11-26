@@ -104,7 +104,7 @@ def vscalebar(scalelen, x, y, ax=None, width=0.0075, color='black',
 
 
 def remove_all_spines(ax):
-    for spine in ax.spines.itervalues():
+    for spine in ax.spines.values():
         spine.set_visible(False)
 
 

@@ -2,13 +2,12 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 import pytest
-from scipy import weave
 
 from gridcells.core import (Pair2D, Position2D, divisor_mod,
                             twisted_torus_distance)
 
 
-@pytest.fixture(scope='module', params=[0, 1, 2, 3, 10] + range(20, 110, 10))
+@pytest.fixture(scope='module', params=[0, 1, 2, 3, 10] + list(range(20, 110, 10)))
 def possize(request):
     return request.param
 
@@ -82,7 +81,7 @@ def test_divisor_mod():
                     divisor_mod(dividend, divisor),
                     dividend % divisor,
                     rtol=0, atol=1e-10)
-    
+
     assert(divisor_mod(0, 3) == 0 % 3)
     assert(divisor_mod(1, 3) != 2)
     assert(divisor_mod(1, 3) != 0)
@@ -93,16 +92,16 @@ def test_divisor_mod():
 class TestTTDistance(object):
     def remapTwistedTorus(self, a, others, dim):
         ''' Calculate a distance between ``a`` and ``others`` on a twisted torus.
-        
+
         Take ``a`` which is a 2D position and others, which is a vector of 2D
         positions and compute the distances between them based on the topology of
         the twisted torus.
-        
+
         If you just want to remap a function of (X, Y), set a==[[0, 0]].
 
         Parameters
         ----------
-        
+
         a : a Position2D instance
             Specifies the initial position. ``a.x`` and ``a.y`` must be convertible
             to floats
@@ -120,10 +119,8 @@ class TestTTDistance(object):
         a_y      = float(a.y)
         others_x = np.asarray(others.x)
         others_y = np.asarray(others.y)
-        szO      = others.x.shape[0]
         x_dim    = float(dim.x)
         y_dim    = float(dim.y)
-        ret      = np.ndarray((szO,))
 
         # Remap the values modulo torus size.
         a_x = a_x % x_dim
@@ -131,35 +128,17 @@ class TestTTDistance(object):
         others_x = others_x % x_dim
         others_y = others_y % y_dim
 
-        code = '''
-        #define SQ(x) ((x) * (x))
-        #define MIN(x1, x2) ((x1) < (x2) ? (x1) : (x2))
+        d = np.empty((7, others_x.size))
 
-        for (int i = 0; i < szO; i++)
-        {
-            double o_x = others_x(i);
-            double o_y = others_y(i);
+        d[0, :] = np.sqrt((a_x - others_x            )**2 + (a_y - others_y        )**2)
+        d[1, :] = np.sqrt((a_x - others_x - x_dim    )**2 + (a_y - others_y        )**2)
+        d[2, :] = np.sqrt((a_x - others_x + x_dim    )**2 + (a_y - others_y        )**2)
+        d[3, :] = np.sqrt((a_x - others_x + 0.5*x_dim)**2 + (a_y - others_y - y_dim)**2)
+        d[4, :] = np.sqrt((a_x - others_x - 0.5*x_dim)**2 + (a_y - others_y - y_dim)**2)
+        d[5, :] = np.sqrt((a_x - others_x + 0.5*x_dim)**2 + (a_y - others_y + y_dim)**2)
+        d[6, :] = np.sqrt((a_x - others_x - 0.5*x_dim)**2 + (a_y - others_y + y_dim)**2)
 
-            double d1 = sqrt(SQ(a_x - o_x            ) + SQ(a_y - o_y        ));
-            double d2 = sqrt(SQ(a_x - o_x - x_dim    ) + SQ(a_y - o_y        ));
-            double d3 = sqrt(SQ(a_x - o_x + x_dim    ) + SQ(a_y - o_y        ));
-            double d4 = sqrt(SQ(a_x - o_x + 0.5*x_dim) + SQ(a_y - o_y - y_dim));
-            double d5 = sqrt(SQ(a_x - o_x - 0.5*x_dim) + SQ(a_y - o_y - y_dim));
-            double d6 = sqrt(SQ(a_x - o_x + 0.5*x_dim) + SQ(a_y - o_y + y_dim));
-            double d7 = sqrt(SQ(a_x - o_x - 0.5*x_dim) + SQ(a_y - o_y + y_dim));
-
-            ret(i) = MIN(d7, MIN(d6, MIN(d5, MIN(d4, MIN(d3, MIN(d2, d1))))));
-        }
-        '''
-        
-        weave.inline(code,
-            ['others_x', 'others_y', 'szO', 'ret', 'a_x', 'a_y', 'x_dim', 'y_dim'],
-            type_converters=weave.converters.blitz,
-            compiler='gcc',
-            extra_compile_args=['-O3'],
-            verbose=2)
-
-        return ret
+        return np.min(d, axis=0)
 
     def test_reference_imp(self):
         # Basic test

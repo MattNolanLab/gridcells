@@ -21,7 +21,6 @@ import os
 
 import numpy as np
 import scipy
-from scipy import weave
 import collections
 
 # Do not import when in RDT environment
@@ -62,57 +61,10 @@ def sliding_firing_rate_tuple(spikes, n, tstart, tend, dt, win_len):
     output : np.ndarray
         An array of shape (n, int((tend-tstart)/dt)+1
     '''
-    tstart = float(tstart)
-    tend = float(tend)
-    dt = float(dt)
-    win_len = float(win_len)
-
-    sz_rate = int((tend - tstart) / dt) + 1
-    n_ids = np.array(spikes[0])             # pylint: disable=unused-variable
-    spike_times = np.array(spikes[1])
-    len_spikes = len(spike_times)           # pylint: disable=unused-variable
-    bit_spikes = np.zeros((n, sz_rate))     # pylint: disable=unused-variable
-    fr = np.zeros((n, sz_rate))
-    dt_wlen = int(win_len / dt)             # pylint: disable=unused-variable
-    times = np.arange(sz_rate) * dt
-    n = int(n)
-
-    # print "max(n_ids): ", np.max(n_ids)
-    # print 'sz_rate: ', sz_rate
-    # print 'n: ', n
-    # print 'dt_wlen: ', dt_wlen
-
-    code = """
-        for (int i = 0; i < len_spikes; i++)
-        {
-            int spikeSteps = (spike_times(i) - tstart) / dt;
-            if (spikeSteps >= 0 && spikeSteps < sz_rate)
-            {
-                int n_id = n_ids(i);
-                bit_spikes(n_id, spikeSteps) += 1;
-            }
-        }
-
-        for (int n_id = 0; n_id < n; n_id++)
-            for (int t = 0; t < sz_rate; t++)
-            {
-                fr(n_id, t) = .0;
-                for (int s = 0; s < dt_wlen; s++)
-                    if ((t+s) < sz_rate)
-                        fr(n_id, t) += bit_spikes(n_id, t+s);
-            }
-        """
-
-    weave.inline(
-        code,
-        ['n', 'sz_rate', 'dt_wlen', 'len_spikes', 'n_ids', 'spike_times',
-         'tstart', 'dt', 'bit_spikes', 'fr'],
-        type_converters=weave.converters.blitz,
-        compiler='gcc',
-        extra_compile_args=['-O3'],
-        verbose=2)
-
-    return fr / (win_len * 1e-3), times
+    rate = _spikes.sliding_firing_rate_base(spikes[0], spikes[1], n, tstart,
+                                            tend, dt, win_len)
+    rate_t = _spikes.sliding_times(tstart, tend, dt)
+    return (rate, rate_t)
 
 
 class PopulationSpikes(collections.Sequence):
@@ -137,8 +89,8 @@ class PopulationSpikes(collections.Sequence):
 
         # We are expecting senders and times as numpy arrays, if they are not,
         # convert them. Moreover, senders.dtype must be int, for indexing.
-        self._senders = np.asarray(senders, dtype=int)
-        self._times = np.asarray(times)
+        self._senders = np.ascontiguousarray(senders, dtype=np.int)
+        self._times = np.ascontiguousarray(times)
         self._unpacked = [None] * self._N  # unpacked version of spikes
 
     @property
@@ -166,33 +118,10 @@ class PopulationSpikes(collections.Sequence):
         output : numpy array
             Firing rate in Hz for each neuron in the population.
         '''
-        result = np.zeros((self._N, ))
-        times = self._times             # pylint: disable=unused-variable
-        senders = self._senders         # pylint: disable=unused-variable
-        n = int(self._N)                # pylint: disable=unused-variable
-        ts = float(tstart)              # pylint: disable=unused-variable
-        te = float(tend)                # pylint: disable=unused-variable
-        code = '''
-            for (int i = 0; i < senders.size(); i++)
-            {
-                int t = times(i);
-                int s = senders(i);
-                if (s >= 0 && s < n && t >= ts && t <= te)
-                    result(s)++;
-                else if (s < 0 || s >= n)
-                    std::cout << "senders is outside range <0, n)" <<
-                            std::endl;
-            }
-        '''
-
-        weave.inline(
-            code,
-            ['n', 'times', 'senders', 'ts', 'te', 'result'],
-            type_converters=weave.converters.blitz,
-            compiler='gcc',
-            extra_compile_args=['-O3'],
-            verbose=2)
-        return 1e3 * result / (tend - tstart)
+        if tend < tstart:
+            raise ValueError('tstart must be <= tend.')
+        return _spikes.avg_fr(self._senders, self._times, self._N, tstart,
+                              tend) * 1e3
 
     def sliding_firing_rate(self, tstart, tend, dt, win_len):
         '''
@@ -338,7 +267,7 @@ class PopulationSpikes(collections.Sequence):
             raise TypeError('Length of neuron indexes do not match!')
 
         res = [None] * len(idx1)
-        for n in xrange(len(idx1)):
+        for n in range(len(idx1)):
             res[n] = reduce_fun(_spikes.spike_time_diff(self[idx1[n]],
                                                         self[idx2[n]]))
 
@@ -448,7 +377,7 @@ class PopulationSpikes(collections.Sequence):
 
         res = []
         if n is None:
-            for n_id in xrange(len(self)):
+            for n_id in range(len(self)):
                 res.append(reduce_fun(self.isi_neuron(n_id)))
         elif isinstance(n, int):
             res.append(reduce_fun(self.isi_neuron(n)))
@@ -562,7 +491,7 @@ class TorusPopulationSpikes(PopulationSpikes):
                    (x - sheet_size_x / 2) / sheet_size_x * 2 * np.pi).ravel()
         y = np.exp(1j *
                    (y - sheet_size_y / 2) / sheet_size_y * 2 * np.pi).ravel()
-        for t_it in xrange(len(tsteps)):
+        for t_it in range(len(tsteps)):
             p[t_it, 0] = np.dot(F[:, t_it], x)
             p[t_it, 1] = np.dot(F[:, t_it], y)
 

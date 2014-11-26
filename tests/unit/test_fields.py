@@ -107,7 +107,8 @@ class TestSpikePosExtraction(object):
                              spike_pos_val):
         corr_times = self.get_correct_spike_times(nspikes, positions)
         corr_spike_pos = self.reference_spike_pos(corr_times, positions)
-        times_idx = np.random.choice(len(corr_times), size=len(corr_times)*p)
+        times_idx = np.random.choice(len(corr_times),
+                                     size=int(len(corr_times)*p))
         inj_times = np.copy(corr_times)
         inj_times[times_idx] = times_val
         inj_spike_pos = corr_spike_pos.copy()

@@ -14,9 +14,19 @@
 // objects such that they can be used as base objects of numpy arrays
 //
 
+#if PY_VERSION_HEX >= 0x03000000
+
+#define INIT_ARMA_CAPSULE( MatT )  \
+    ArmaCapsulePyType< MatT >::object.tp_new = PyType_GenericNew; \
+    if (PyType_Ready(&ArmaCapsulePyType< MatT >::object) < 0) return NULL;
+
+#else
+
 #define INIT_ARMA_CAPSULE( MatT )  \
     ArmaCapsulePyType< MatT >::object.tp_new = PyType_GenericNew; \
     if (PyType_Ready(&ArmaCapsulePyType< MatT >::object) < 0) return;
+
+#endif
 
 template< typename MatT >
 struct ArmaCapsule {
@@ -43,8 +53,7 @@ private:
 
 
 template< typename MatT > PyTypeObject ArmaCapsulePyType<MatT>::object = { \
-    PyObject_HEAD_INIT(NULL)   \
-    0, /*ob_size*/             \
+    PyVarObject_HEAD_INIT(NULL, 0) /*ob_size*/ \
     "ArmaCapsule", /*tp_name*/ \
     sizeof( ArmaCapsule< MatT > ), /*tp_basicsize*/ \
     0, /*tp_itemsize*/ \
@@ -148,6 +157,7 @@ template< typename elem_type > struct NumpyType { private: elem_type _d; };
 ASSOCIATE_NUMPY_TYPE( double,   NPY_DOUBLE )
 ASSOCIATE_NUMPY_TYPE( float,    NPY_FLOAT )
 ASSOCIATE_NUMPY_TYPE( int,      NPY_INT )
+ASSOCIATE_NUMPY_TYPE( long,     NPY_LONG )
 ASSOCIATE_NUMPY_TYPE( unsigned, NPY_UINT )
 ASSOCIATE_NUMPY_TYPE( unsigned char, NPY_UBYTE )
 #if defined(ARMA_64BIT_WORD)
@@ -167,6 +177,7 @@ ARMA_TYPE_INFO( arma::vec,          1 )
 ARMA_TYPE_INFO( arma::fvec,         1 )
 ARMA_TYPE_INFO( arma::ivec,         1 )
 ARMA_TYPE_INFO( arma::uvec,         1 )
+ARMA_TYPE_INFO( arma::Col<long>,    1 )
 ARMA_TYPE_INFO( arma::uchar_vec,    1 )
 #if defined(ARMA_64BIT_WORD)
 ARMA_TYPE_INFO( arma::u32_vec,      1 )

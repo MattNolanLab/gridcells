@@ -16,11 +16,11 @@ These types of arenas are currently defined:
     RectangularArena
     SquareArena
 '''
-from abc import ABCMeta, abstractmethod
+from __future__ import absolute_import, print_function, division
 
 import numpy as np
 
-from .common import Pair2D, Position2D
+from .common import Pair2D
 
 ##############################################################################
 
@@ -31,10 +31,7 @@ class Arena(object):
     This class is an interface for obtaining discretisations of the arenas and
     masks when the shape is not rectangular.
     '''
-    __metaclass__ = ABCMeta
 
-
-    @abstractmethod
     def getDiscretisation(self):
         '''Obtain the discretisation of this arena.
 
@@ -46,12 +43,10 @@ class Arena(object):
         '''
         raise NotImplementedError()
 
-
-    @abstractmethod
     def getMask(self):
         '''Return mask (a 2D ``np.ndarray``) of where the positions in the
         arena are valid.
-        
+
         For isntance with a circular arena, all positions outside its radius
         are invalid.
         '''
@@ -108,7 +103,7 @@ class SquareArena(RectangularArena):
     def __init__(self, size, discretisation):
         tmpSz = Pair2D(size, size)
         super(SquareArena, self).__init__(tmpSz, discretisation)
-    
+
 
 class CircularArena(SquareArena):
     '''A circular arena.'''
