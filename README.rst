@@ -42,23 +42,18 @@ There are a number of dependencies you need to install this package:
     - matplotlib (>= 1.3.1)
 
 For Linux, simply install these using the package manager.For Mac OS the
-easiest way is probably to use `homebrew <http://brew.sh/>`_. This package has
-not been tested on Windows but if you manage to install the dependencies there
-should be no problems.
+easiest way is probably to use `homebrew <http://brew.sh/>`_ and pip. This
+package has not been tested on Windows but if you manage to install the
+dependencies there should be no problems.
 
 
 Installation
 ------------
 
-After installing ``SWIG`` and ``numpy``, run::
+After installing ``SWIG``, run::
 
     python setup.py install
 
-.. note::
-
-    The automatic installation process is a work in progress and therefore,
-    when using ``pip`` to install, ``numpy`` (in the minimal version) must
-    already be installed before running ``pip install``.
 
 License
 -------
