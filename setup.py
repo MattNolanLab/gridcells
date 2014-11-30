@@ -81,7 +81,7 @@ all_extensions = [
 
 setup(
     name='gridcells',
-    version='0.1',
+    version='0.1.0',
     description='Package for grid cell analysis and simulation.',
     author='Lukas Solanka',
     author_email='lsolanka@gmail.com',
