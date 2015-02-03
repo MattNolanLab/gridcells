@@ -19,16 +19,10 @@ class TestCorrelation(object):
     maxN = 1000
     maxLoops = 1000
 
-    def checkCppNumpyCorr(self, a1, a2):
-        '''Check whether the cpp version gives approximately equal results when
-        compared to numpy.'''
-        c_cpp = asignal.corr(a1, a2, mode='twosided')
-        c_np    = np.correlate(a1, a2, mode='full')[::-1]
-        np.testing.assert_allclose(c_cpp, c_np, rtol=self.rtol)
-
-    def test_cpp(self):
-        '''Test the c++ vs. numpy version.'''
-        for _ in range(self.maxLoops):
+    def _data_generator(self, n_items, sz):
+        '''Generate pairs of test vectors.'''
+        it = 0
+        while it < n_items:
             N1 = np.random.randint(self.maxN) + 1
             N2 = np.random.randint(self.maxN) + 1
             if N1 == 0 and N2 == 0:
@@ -37,22 +31,41 @@ class TestCorrelation(object):
             a1 = np.random.rand(N1)
             a2 = np.random.rand(N2)
 
-            self.checkCppNumpyCorr(a1, a2)
+            yield (a1, a2)
 
-    @base.notimpl
+            it += 1
+
     def test_onesided(self):
         '''Test the one-sided version of ``corr``.'''
-        pass
+        for a1, a2 in self._data_generator(self.maxLoops, self.maxN):
+            c_cpp = asignal.corr(a1, a2, mode='onesided')
+            c_np = np.correlate(a1, a2, mode='full')[::-1][a1.size - 1:]
+            np.testing.assert_allclose(c_cpp, c_np, rtol=self.rtol)
 
-    @base.notimpl
     def test_twosided(self):
         '''Test the two-sided version of ``corr``.'''
-        pass
+        for a1, a2 in self._data_generator(self.maxLoops, self.maxN):
+            c_cpp = asignal.corr(a1, a2, mode='twosided')
+            c_np = np.correlate(a1, a2, mode='full')[::-1]
+            np.testing.assert_allclose(c_cpp, c_np, rtol=self.rtol)
 
-    @base.notimpl
     def test_range(self):
         '''Test the ranged version of ``corr``.'''
-        pass
+        # Half the range of both signals
+        for a1, a2 in self._data_generator(self.maxLoops, self.maxN):
+            if a1.size <= 1 or a2.size <= 1:
+                continue
+            lag_start =  - (a1.size // 2)
+            lag_end = a2.size // 2
+            c_np_centre = a1.size - 1
+            c_cpp = asignal.corr(a1, a2, mode='range', lag_start=lag_start,
+                                 lag_end = lag_end)
+            c_np = np.correlate(a1, a2, mode='full')[::-1]
+            np.testing.assert_allclose(
+                c_cpp,
+                c_np[c_np_centre + lag_start:c_np_centre + lag_end + 1],
+                rtol=self.rtol)
+
 
     def test_zero_len(self):
         '''Test that an exception is raised when inputs have zero length.'''
@@ -69,3 +82,8 @@ class TestCorrelation(object):
                 asignal.corr(a2, a1, mode, lag_start, lag_end)
             with pytest.raises(TypeError):
                 asignal.corr(a1, a1, mode, lag_start, lag_end)
+
+    def test_non_double(self):
+        '''Test the corr function when dtype is not double.'''
+        a1 = np.array([1, 2, 3], dtype=int)
+        asignal.corr(a1, a1, mode='twosided')

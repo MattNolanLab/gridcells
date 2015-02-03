@@ -14,6 +14,8 @@ from __future__ import absolute_import, print_function, division
 
 import os
 
+import numpy as np
+
 # Do not import when in RDT environment
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if not on_rtd:
@@ -62,6 +64,8 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
 
     .. seealso:: :py:func:`autoCorrelation`
     '''
+    a = np.require(a, np.float, 'F')
+    b = np.require(b, np.float, 'F')
     sz1 = a.size
     sz2 = b.size
     if sz1 == 0 or sz2 == 0:
