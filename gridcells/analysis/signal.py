@@ -62,7 +62,7 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
 
         This function always returns a numpy array with dtype=float.
 
-    .. seealso:: :py:func:`autoCorrelation`
+    .. seealso:: :py:func:`acorr`
     '''
     a = np.require(a, np.float, 'F')
     b = np.require(b, np.float, 'F')
