@@ -73,10 +73,18 @@ spikes_ext = DelayedExtension('gridcells.analysis._spikes',
                        ['src/spikes.cpp', 'src/spikes.i'],
                        swig_opts=default_swig_opts)
 
+signal_ext = DelayedExtension('gridcells.analysis._signal',
+                              ['src/signal.cpp', 'src/signal.i'],
+                              depends=['src/signal.cpp',
+                                       'src/include/signal.hpp',
+                                       'src/signal.i'],
+                              swig_opts=default_swig_opts)
+
 all_extensions = [
     field_ext,
     common_ext,
-    spikes_ext
+    spikes_ext,
+    signal_ext
 ]
 
 setup(
