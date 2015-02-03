@@ -7,7 +7,7 @@ The can be e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
 
 .. autosummary::
 
-    autoCorrelation
+    acorr
     corr
 '''
 from __future__ import absolute_import, print_function, division
@@ -87,7 +87,7 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
                          "'range'")
 
 
-def autoCorrelation(sig, max_lag=None, norm=False, mode='onesided'):
+def acorr(sig, max_lag=None, norm=False, mode='onesided'):
     '''
     Compute an autocorrelation function of a real signal.
 
@@ -113,6 +113,8 @@ def autoCorrelation(sig, max_lag=None, norm=False, mode='onesided'):
     output : numpy.ndarray
         A 1D array, size depends on ``max_lag`` and ``mode`` parameters.
     '''
+    if max_lag is None:
+        max_lag = len(sig) - 1
     if mode == 'onesided':
         c = corr(sig, sig, mode='range', lag_start=0, lag_end=max_lag)
     elif mode == 'twosided':

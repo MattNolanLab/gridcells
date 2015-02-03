@@ -8,6 +8,24 @@ import gridcells.analysis.signal as asignal
 import base
 
 notImplMsg = "Not implemented"
+RTOL = 1e-10
+
+
+def _data_generator(n_items, sz):
+    '''Generate pairs of test vectors.'''
+    it = 0
+    while it < n_items:
+        N1 = np.random.randint(sz) + 1
+        N2 = np.random.randint(sz) + 1
+        if N1 == 0 and N2 == 0:
+            continue
+
+        a1 = np.random.rand(N1)
+        a2 = np.random.rand(N2)
+
+        yield (a1, a2)
+
+        it += 1
 
 
 class TestCorrelation(object):
@@ -15,44 +33,27 @@ class TestCorrelation(object):
     Test the analysis.signal.corr function (and effectively the core of the
     autoCorrelation) function.
     '''
-    rtol = 1e-10
-    maxN = 1000
+    maxN = 500
     maxLoops = 1000
-
-    def _data_generator(self, n_items, sz):
-        '''Generate pairs of test vectors.'''
-        it = 0
-        while it < n_items:
-            N1 = np.random.randint(self.maxN) + 1
-            N2 = np.random.randint(self.maxN) + 1
-            if N1 == 0 and N2 == 0:
-                continue
-
-            a1 = np.random.rand(N1)
-            a2 = np.random.rand(N2)
-
-            yield (a1, a2)
-
-            it += 1
 
     def test_onesided(self):
         '''Test the one-sided version of ``corr``.'''
-        for a1, a2 in self._data_generator(self.maxLoops, self.maxN):
+        for a1, a2 in _data_generator(self.maxLoops, self.maxN):
             c_cpp = asignal.corr(a1, a2, mode='onesided')
             c_np = np.correlate(a1, a2, mode='full')[::-1][a1.size - 1:]
-            np.testing.assert_allclose(c_cpp, c_np, rtol=self.rtol)
+            np.testing.assert_allclose(c_cpp, c_np, rtol=RTOL)
 
     def test_twosided(self):
         '''Test the two-sided version of ``corr``.'''
-        for a1, a2 in self._data_generator(self.maxLoops, self.maxN):
+        for a1, a2 in _data_generator(self.maxLoops, self.maxN):
             c_cpp = asignal.corr(a1, a2, mode='twosided')
             c_np = np.correlate(a1, a2, mode='full')[::-1]
-            np.testing.assert_allclose(c_cpp, c_np, rtol=self.rtol)
+            np.testing.assert_allclose(c_cpp, c_np, rtol=RTOL)
 
     def test_range(self):
         '''Test the ranged version of ``corr``.'''
         # Half the range of both signals
-        for a1, a2 in self._data_generator(self.maxLoops, self.maxN):
+        for a1, a2 in _data_generator(self.maxLoops, self.maxN):
             if a1.size <= 1 or a2.size <= 1:
                 continue
             lag_start =  - (a1.size // 2)
@@ -64,7 +65,7 @@ class TestCorrelation(object):
             np.testing.assert_allclose(
                 c_cpp,
                 c_np[c_np_centre + lag_start:c_np_centre + lag_end + 1],
-                rtol=self.rtol)
+                rtol=RTOL)
 
 
     def test_zero_len(self):
@@ -87,3 +88,38 @@ class TestCorrelation(object):
         '''Test the corr function when dtype is not double.'''
         a1 = np.array([1, 2, 3], dtype=int)
         asignal.corr(a1, a1, mode='twosided')
+
+
+class TestAutoCorrelation(object):
+    '''Test the acorr function.'''
+    maxN = 500
+    maxLoops = 1000
+
+    def test_default_params(self):
+        '''Test default parameters.'''
+        a = np.arange(10)
+        c_cpp = asignal.acorr(a)
+        c_np = np.correlate(a, a, mode='full')[::-1][a.size - 1:]
+        np.testing.assert_allclose(c_cpp, c_np, rtol=RTOL)
+
+    def test_onesided(self):
+        '''Test the one-sided version of ``corr``.'''
+        a = np.arange(10)
+        c_cpp = asignal.acorr(a, mode='onesided', max_lag=5)
+        c_np = np.correlate(a, a, mode='full')[::-1][a.size - 1:a.size - 1 + 6]
+        np.testing.assert_allclose(c_cpp, c_np, rtol=RTOL)
+
+    def test_twosided(self):
+        '''Test the two-sided version of ``corr``.'''
+        a = np.arange(10)
+        c_cpp = asignal.acorr(a, mode='twosided', max_lag=5)
+        c_np = np.correlate(a, a, mode='full')[::-1][a.size - 6:a.size + 5]
+        np.testing.assert_allclose(c_cpp, c_np, rtol=RTOL)
+
+    def test_norm(self):
+        '''Test normalization.'''
+        a = np.arange(10)
+        c_cpp = asignal.acorr(a, mode='twosided', norm=True)
+        c_np = np.correlate(a, a, mode='full')[::-1]
+        np.testing.assert_allclose(c_cpp, c_np / np.max(c_np), rtol=RTOL)
+
