@@ -18,7 +18,8 @@ class TestCorrelation(unittest.TestCase):
         self.maxN = 1000
         self.maxLoops = 1000
 
-    def assertSequenceAlmostEqual(self, first, second, places=None, msg=None, delta=None):
+    def assertSequenceAlmostEqual(self, first, second, places=None, msg=None,
+                                  delta=None):
         """
         Fail if the two objects are unequal as determined by the difference
         between all of their values, rounded to the given number of decimal
@@ -47,13 +48,12 @@ class TestCorrelation(unittest.TestCase):
             if places is None:
                 places = 7
 
-            if np.all(np.round(np.abs(second-first), places) == 0):
+            if np.all(np.round(np.abs(second - first), places) == 0):
                 return
 
             standardMsg = '%s != %s within %r places' % (first, second, places)
         msg = self._formatMessage(msg, standardMsg)
         raise self.failureException(msg)
-
 
     def checkCppNumpyCorr(self, a1, a2):
         '''Check whether the cpp version gives approximately equal results when
@@ -61,7 +61,6 @@ class TestCorrelation(unittest.TestCase):
         c_cpp = asignal.corr(a1, a2, mode='twosided')
         c_np    = np.correlate(a1, a2, mode='full')[::-1]
         self.assertSequenceAlmostEqual(c_cpp, c_np, places=self.places)
-
 
     def test_cpp(self):
         '''Test the c++ vs. numpy version.'''
@@ -76,18 +75,15 @@ class TestCorrelation(unittest.TestCase):
 
             self.checkCppNumpyCorr(a1, a2)
 
-
     @unittest.skip(notImplMsg)
     def test_onesided(self):
         '''Test the one-sided version of ``corr``.'''
         pass
 
-
     @unittest.skip(notImplMsg)
     def test_twosided(self):
         '''Test the two-sided version of ``corr``.'''
         pass
-
 
     @unittest.skip(notImplMsg)
     def test_range(self):
@@ -109,6 +105,3 @@ class TestCorrelation(unittest.TestCase):
                               lag_end)
             self.assertRaises(TypeError, asignal.corr, a1, a1, mode, lag_start,
                               lag_end)
-
-
-

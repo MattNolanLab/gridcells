@@ -9,9 +9,10 @@ Modules
 
     core.common
     core.arena
-    analysis.fields
-    analysis.registration
-    analysis.info
-    analysis.spikes
     analysis.bumps
+    analysis.fields
+    analysis.info
+    analysis.registration
+    analysis.signal
+    analysis.spikes
     plotting.fields

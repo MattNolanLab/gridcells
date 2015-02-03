@@ -1,22 +1,24 @@
 '''
-The :mod:`analysis.signal` module contains functions and classes for continuous signal
-analysis
+===============================================================
+:mod:`gridcells.analysis.signal` - signal analysis
+===============================================================
 
 The can be e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
 
-.. currentmodule:: analysis.signal
 .. autosummary::
+
     autoCorrelation
     corr
-    localExtrema
-
-----------------------
 '''
 from __future__ import absolute_import, print_function, division
 
-import numpy as np
+import os
 
-from . import _signal
+# Do not import when in RDT environment
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+if not on_rtd:
+    from . import _signal
+
 
 
 def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
@@ -62,22 +64,23 @@ def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
     '''
     sz1 = a.size
     sz2 = b.size
-    if (sz1 == 0 or sz2 == 0):
+    if sz1 == 0 or sz2 == 0:
         raise TypeError("Both input arrays must have non-zero size!")
 
-    if (mode == 'onesided'):
+    if mode == 'onesided':
         return _signal.correlation_function(a, b, 0, sz2 - 1)
-    elif (mode == 'twosided'):
+    elif mode == 'twosided':
         return _signal.correlation_function(a, b, -(sz1 - 1), sz2 - 1)
-    elif (mode == 'range'):
+    elif mode == 'range':
         lag_start = int(lag_start)
         lag_end   = int(lag_end)
-        if (lag_start <= -sz1 or lag_end >= sz2):
-            raise ValueError("Lag range must be in the range [{0}, {1}]".format(-(sz1 - 1), sz2 - 1))
+        if lag_start <= -sz1 or lag_end >= sz2:
+            raise ValueError("Lag range must be in the range "
+                             "[{0}, {1}]".format(-(sz1 - 1), sz2 - 1))
         return _signal.correlation_function(a, b, lag_start, lag_end)
     else:
-        raise ValueError("mode must be one of 'onesided', 'twosided', or 'range'")
-
+        raise ValueError("mode must be one of 'onesided', 'twosided', or "
+                         "'range'")
 
 
 def autoCorrelation(sig, max_lag=None, norm=False, mode='onesided'):
@@ -90,10 +93,10 @@ def autoCorrelation(sig, max_lag=None, norm=False, mode='onesided'):
         The signal, 1D vector, to compute an autocorrelation of.
 
     max_lag : int, optional
-        Maximal number of lags. If mode == 'onesided', the range of lags will
-        be [0, max_lag], i.e. the size of the output will be (max_lag+1). If mode ==
-        'twosided', the lags will be in the range [-max_lag, max_lag], and so the size
-        of the output will be 2*max_lag + 1.
+        Maximal number of lags. If mode == 'onesided', the range of lags will be
+        [0, max_lag], i.e. the size of the output will be (max_lag+1). If
+        mode == 'twosided', the lags will be in the range [-max_lag, max_lag],
+        and so the size of the output will be 2*max_lag + 1.
 
         If max_lag is None, then max_lag will be set to len(sig)-1
 
@@ -106,14 +109,14 @@ def autoCorrelation(sig, max_lag=None, norm=False, mode='onesided'):
     output : numpy.ndarray
         A 1D array, size depends on ``max_lag`` and ``mode`` parameters.
     '''
-    if (mode == 'onesided'):
+    if mode == 'onesided':
         c = corr(sig, sig, mode='range', lag_start=0, lag_end=max_lag)
-    elif (mode == 'twosided'):
+    elif mode == 'twosided':
         c = corr(sig, sig, mode='range', lag_start=-max_lag, lag_end=max_lag)
     else:
         raise ValueError("mode can be either 'onesided' or 'twosided'!")
 
-    if (norm):
+    if norm:
         c /= max(c)
 
     return c
