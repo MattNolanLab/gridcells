@@ -7,8 +7,6 @@ from base.spikes import RateDefinedSpikeGenerator
 
 import base
 
-not_impl_msg = "Not implemented yet."
-
 
 ##############################################################################
 # Spike analysis tests (analysis.spikes)
