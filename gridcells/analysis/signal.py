@@ -112,6 +112,11 @@ def acorr(sig, max_lag=None, norm=False, mode='onesided'):
 
     output : numpy.ndarray
         A 1D array, size depends on ``max_lag`` and ``mode`` parameters.
+
+    Notes
+    -----
+    If the normalisation constant is zero (i.e. the input array is zero), this
+    function will return a zero array.
     '''
     if max_lag is None:
         max_lag = len(sig) - 1
@@ -123,6 +128,8 @@ def acorr(sig, max_lag=None, norm=False, mode='onesided'):
         raise ValueError("mode can be either 'onesided' or 'twosided'!")
 
     if norm:
-        c /= max(c)
+        maximum = np.max(np.abs(c))
+        if maximum != 0.:
+            c /= maximum
 
     return c

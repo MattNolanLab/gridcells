@@ -118,8 +118,13 @@ class TestAutoCorrelation(object):
 
     def test_norm(self):
         '''Test normalization.'''
+        # Simple array
         a = np.arange(10)
         c_cpp = asignal.acorr(a, mode='twosided', norm=True)
         c_np = np.correlate(a, a, mode='full')[::-1]
         np.testing.assert_allclose(c_cpp, c_np / np.max(c_np), rtol=RTOL)
 
+        # A zero array will return zero
+        zero_array = np.zeros(13)
+        c_cpp = asignal.acorr(zero_array, mode='twosided', norm=True)
+        assert np.all(c_cpp == 0.)

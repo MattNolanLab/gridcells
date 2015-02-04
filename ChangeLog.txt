@@ -1,2 +1,7 @@
+Change log for gridcells
 
-* 0.1.0
+- Fix a division by zero problem in analysis.signal.acorr. If norm==True and
+the signal (or its autocorrelation) is completely zero, the function returns
+zero and not an array of NaNs.
+
+** 0.1.0 **
