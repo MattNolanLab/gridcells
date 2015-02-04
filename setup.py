@@ -1,4 +1,7 @@
 '''Setup script for GridCells.'''
+from __future__ import absolute_import, print_function, division
+
+from os.path import join
 from setuptools import setup, Extension
 
 all_packages = [
@@ -16,6 +19,17 @@ default_swig_opts = [
     '-c++',
     '-Iexternal/armanpy/include',
     '-Isrc/include'
+]
+
+
+ARMANPY_INCLUDE_DIR = 'external/armanpy/include'
+ARMANPY_DEPS = [
+    join(ARMANPY_INCLUDE_DIR, 'armanpy.hpp'),
+    join(ARMANPY_INCLUDE_DIR, 'armanpy.i'),
+    join(ARMANPY_INCLUDE_DIR, 'armanpy_1d.i'),
+    join(ARMANPY_INCLUDE_DIR, 'armanpy_2d.i'),
+    join(ARMANPY_INCLUDE_DIR, 'armanpy_3d.i'),
+    join(ARMANPY_INCLUDE_DIR, 'numpy.i'),
 ]
 
 
@@ -63,21 +77,31 @@ class DelayedExtension(Extension, object):
 
 
 field_ext = DelayedExtension('gridcells.analysis._fields',
-                      ['src/fields.cpp', 'src/fields.i'],
-                      swig_opts=default_swig_opts)
+                             ['src/fields.cpp', 'src/fields.i'],
+                             depends=['src/fields.cpp',
+                                      'src/include/fields.hpp',
+                                      'src/fields.i'] + ARMANPY_DEPS,
+                             swig_opts=default_swig_opts)
+
 common_ext = DelayedExtension('gridcells.core._common',
-                       ['src/common.cpp', 'src/common.i'],
-                       swig_opts=default_swig_opts)
+                              ['src/common.cpp', 'src/common.i'],
+                              depends=['src/common.cpp',
+                                       'src/include/common.hpp',
+                                       'src/common.i'] + ARMANPY_DEPS,
+                              swig_opts=default_swig_opts)
 
 spikes_ext = DelayedExtension('gridcells.analysis._spikes',
-                       ['src/spikes.cpp', 'src/spikes.i'],
-                       swig_opts=default_swig_opts)
+                              ['src/spikes.cpp', 'src/spikes.i'],
+                              depends=['src/spikes.cpp',
+                                       'src/include/spikes.hpp',
+                                       'src/spikes.i'] + ARMANPY_DEPS,
+                              swig_opts=default_swig_opts)
 
 signal_ext = DelayedExtension('gridcells.analysis._signal',
                               ['src/signal.cpp', 'src/signal.i'],
                               depends=['src/signal.cpp',
                                        'src/include/signal.hpp',
-                                       'src/signal.i'],
+                                       'src/signal.i'] + ARMANPY_DEPS,
                               swig_opts=default_swig_opts)
 
 all_extensions = [
