@@ -30,13 +30,15 @@ Dependencies
 ------------
 
 There are a number of dependencies needed for the python version:
-    - `armadillo <http://arma.sourceforge.net/>`_ (>= 4.100)
+    - setuptools (>= 3.6)
 
-    - SWIG (>= 2.0)
+    - SWIG  (ideally >= 3.0; earlier versions not tested)
 
     - numpy (>= 1.8)
 
     - scipy (>= 0.13.3)
+
+    - matplotlib (>= 1.3.1)
 
 For Linux, simply install these using the package manager.For Mac OS the
 easiest way is probably to use `homebrew <http://brew.sh/>`_. This package has
@@ -47,15 +49,15 @@ should be no problems.
 Installation
 ------------
 
-After installing ``armadillo`` and ``SWIG``, run::
+After installing the dependencies, run::
 
     python setup.py install
 
 .. note::
 
-    The automatic installation process is a work in progress and therefore,
-    when using ``pip`` to install, ``numpy`` (in the minimal version) must
-    already be installed before running ``pip install``.
+    Currently, installing with ``pip`` through the Python Package Index has
+    some difficulties with the dependency on numpy. Thus it is advisable to
+    have ``numpy`` installed beforehand.
 
 
 License

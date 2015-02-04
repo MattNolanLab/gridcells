@@ -2,7 +2,10 @@
 from __future__ import absolute_import, print_function, division
 
 from os.path import join
-from setuptools import setup, Extension
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from distutils.core import setup, Extension
 
 all_packages = [
     'gridcells',
