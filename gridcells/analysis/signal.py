@@ -9,6 +9,9 @@ The can be e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
 
     acorr
     corr
+    local_extrema
+    local_maxima
+    local_minima
 '''
 from __future__ import absolute_import, print_function, division
 
@@ -16,11 +19,19 @@ import os
 
 import numpy as np
 
+__all__ = [
+    'acorr',
+    'corr',
+    'local_extrema',
+    'local_minima',
+    'local_maxima',
+]
+
+
 # Do not import when in RDT environment
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if not on_rtd:
     from . import _signal
-
 
 
 def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
@@ -133,3 +144,90 @@ def acorr(sig, max_lag=None, norm=False, mode='onesided'):
             c /= maximum
 
     return c
+
+
+def local_extrema(sig):
+    '''Find all local extrema using the derivative approach.
+
+    Parameters
+    ----------
+    sig : numpy.ndarray
+        A 1D numpy array
+
+    Returns
+    -------
+    extrema : (numpy.ndarray, numpy.ndarray)
+        A pair (idx, types) containing the positions of local extrema inside
+        ``sig`` and the type of the extrema:
+
+        * type > 0 means local maximum
+        * type < 0 is local minimum
+
+    See also
+    --------
+    local_minima : Finds local minima.
+    local_maxima : Finds local maxima.
+
+    Notes
+    -----
+    This method is not suitable to find local extrema of functions where the
+    extremum is flat, i.e. as in quare pulses.
+    '''
+    sz = len(sig)
+    szDiff = sz - 1
+
+    der = np.diff(sig)
+    der0 = (der[0:szDiff - 1] * der[1:szDiff]) < 0.
+    ext_idx = np.nonzero(der0)[0]
+
+    dder = np.diff(der)[ext_idx]
+    ext_idx += 1    # Correction for a peak position
+    ext_t = np.ndarray((dder.size, ), dtype=int)
+    ext_t[dder < 0] = 1
+    ext_t[dder > 0] = -1
+
+    return (ext_idx, ext_t)
+
+
+def local_maxima(sig):
+    '''Find all local maxima using the derivative approach
+
+    Parameters
+    ----------
+    sig : numpy.ndarray
+        A 1D numpy array
+
+    Returns
+    -------
+    maxima : np.ndarray
+        An array of indices into ``sig`` of the local maxima.
+
+    See also
+    --------
+    local_extrema : Finds local extrema.
+    local_minima: Finds local minima.
+    '''
+    extrema, etypes = local_extrema(sig)
+    return extrema[etypes == 1]
+
+
+def local_minima(sig):
+    '''Find all local minima using the derivative approach
+
+    Parameters
+    ----------
+    sig : numpy.ndarray
+        A 1D numpy array
+
+    Returns
+    -------
+    maxima : np.ndarray
+        An array of indices into ``sig`` of the local minima.
+
+    See also
+    --------
+    local_extrema : Finds local extrema.
+    local_maxima: Finds local maxima.
+    '''
+    extrema, etypes = local_extrema(sig)
+    return extrema[etypes == -1]
