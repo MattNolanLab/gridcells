@@ -19,7 +19,7 @@ def reference_data():
             self.pos_dt = pos_dt
             self.arena_diam = arena_diam
             self.h = h
-    data_dir = "tests/data"
+    data_dir = "data"
     arena_diam = 180.0
     ref_data = InputData(
         spike_times=np.loadtxt("%s/spikeTimes.txt" % data_dir),
