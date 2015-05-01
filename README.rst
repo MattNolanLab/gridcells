@@ -74,3 +74,8 @@ References
 
 .. [HAFTING2005] Hafting, T. et al., 2005. Microstructure of a spatial map in
                  the entorhinal cortex. Nature, 436(7052), pp.801–806.
+
+Build Status
+------------
+.. image:: https://travis-ci.org/lsolanka/gridcells.svg?branch=master
+    :target: https://travis-ci.org/lsolanka/gridcells
