@@ -123,7 +123,7 @@ pygments_style = 'friendly'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 if on_rtd:
-    html_theme = 'classic'
+    html_theme = 'default'
     html_context = {
         'css_files': [
             'https://media.readthedocs.org/css/sphinx_rtd_theme.css',
