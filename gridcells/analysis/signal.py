@@ -16,6 +16,7 @@ The can be e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
 from __future__ import absolute_import, print_function, division
 
 import os
+from enum import IntEnum
 
 import numpy as np
 
@@ -25,6 +26,7 @@ __all__ = [
     'local_extrema',
     'local_minima',
     'local_maxima',
+    'ExtremumTypes'
 ]
 
 
@@ -32,6 +34,12 @@ __all__ = [
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if not on_rtd:
     from . import _signal
+
+class ExtremumTypes(IntEnum):
+    '''A singleton class that specifies types of extrema.'''
+    UNDEFINED = 0
+    MIN = 1
+    MAX = 2
 
 
 def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
@@ -156,12 +164,8 @@ def local_extrema(sig):
 
     Returns
     -------
-    extrema : (numpy.ndarray, numpy.ndarray)
-        A pair (idx, types) containing the positions of local extrema inside
-        ``sig`` and the type of the extrema:
-
-        * type > 0 means local maximum
-        * type < 0 is local minimum
+    extrema : :class:`~LocalExtrema`
+        An object containing the local extrema of the signal ``sig``.
 
     See also
     --------
@@ -171,7 +175,7 @@ def local_extrema(sig):
     Notes
     -----
     This method is not suitable to find local extrema of functions where the
-    extremum is flat, i.e. as in quare pulses.
+    extremum is flat, i.e. as in square pulses.
     '''
     sz = len(sig)
     szDiff = sz - 1
@@ -183,10 +187,10 @@ def local_extrema(sig):
     dder = np.diff(der)[ext_idx]
     ext_idx += 1    # Correction for a peak position
     ext_t = np.ndarray((dder.size, ), dtype=int)
-    ext_t[dder < 0] = 1
-    ext_t[dder > 0] = -1
+    ext_t[dder < 0] = ExtremumTypes.MAX
+    ext_t[dder > 0] = ExtremumTypes.MIN
 
-    return (ext_idx, ext_t)
+    return LocalExtrema(ext_idx, ext_t)
 
 
 def local_maxima(sig):
@@ -207,8 +211,7 @@ def local_maxima(sig):
     local_extrema : Finds local extrema.
     local_minima: Finds local minima.
     '''
-    extrema, etypes = local_extrema(sig)
-    return extrema[etypes == 1]
+    return local_extrema(sig).get_type(ExtremumTypes.MAX)
 
 
 def local_minima(sig):
@@ -229,5 +232,38 @@ def local_minima(sig):
     local_extrema : Finds local extrema.
     local_maxima: Finds local maxima.
     '''
-    extrema, etypes = local_extrema(sig)
-    return extrema[etypes == -1]
+    return local_extrema(sig).get_type(ExtremumTypes.MIN)
+
+
+class LocalExtrema(object):
+    '''A class representing local extrema for a particular object.
+
+    .. note::
+        For now only 1D extrema are supported.
+    '''
+    def __init__(self, extrema, types):
+        self._extrema = np.asanyarray(extrema)
+        self._types = np.asanyarray(types)
+        if len(extrema) != len(types):
+            raise IndexError('Number of extrema and number of their types '
+                             'must match.')
+
+    def __len__(self):
+        return len(self._types)
+
+    def get_type(self, extremum_type):
+        '''Get all the local extrema that are of type ``extremum_type``.
+
+        Parameters
+        ----------
+        extremum_type : :class:`~ExtremumTypes`
+            The type of the extremum to retrieve.
+
+        Returns
+        -------
+        extrema : iterable
+            An iterable that will contain the extrema with the specified type.
+            If no extremum of the requested type is present, returns an empty
+            array.
+        '''
+        return self._extrema[self._types == extremum_type]

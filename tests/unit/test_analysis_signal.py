@@ -4,7 +4,9 @@ from __future__ import absolute_import, print_function, division
 import pytest
 import numpy as np
 import gridcells.analysis.signal as asignal
-from gridcells.analysis.signal import local_extrema, local_maxima, local_minima
+from gridcells.analysis.signal import (local_extrema, local_maxima,
+                                       local_minima, ExtremumTypes,
+                                       LocalExtrema)
 
 
 RTOL = 1e-10
@@ -154,10 +156,13 @@ def generate_sin(n_half_cycles, resolution=100):
                                  dtype=int)
 
     extrema_types = []
-    current_type = 1
+    current_type = ExtremumTypes.MAX
     for _ in range(n_half_cycles):
         extrema_types.append(current_type)
-        current_type = -1 if current_type == 1 else 1
+        if current_type is ExtremumTypes.MAX:
+            current_type = ExtremumTypes.MIN
+        else:
+            current_type = ExtremumTypes.MAX
 
     return (sig, extrema_positions, np.array(extrema_types))
 
@@ -168,28 +173,21 @@ class TestLocalExtrema(object):
     def test_local_extrema(self):
         for n_extrema in [1, 2, 51]:
             sig, extrema_idx, extrema_types = generate_sin(n_extrema)
-            extrema, etypes = local_extrema(sig)
+            extrema = local_extrema(sig)
             assert len(extrema) == n_extrema
-            assert len(etypes) == n_extrema
-            assert np.all(extrema_idx == extrema)
-            assert np.all(extrema_types == etypes)
+            assert np.all(extrema_idx[extrema_types == ExtremumTypes.MIN] ==
+                          extrema.get_type(ExtremumTypes.MIN))
+            assert np.all(extrema_idx[extrema_types == ExtremumTypes.MAX] ==
+                          extrema.get_type(ExtremumTypes.MAX))
 
     def test_zero_array(self):
-        extrema, etypes = local_extrema(np.empty(0))
-        assert len(extrema) == 0
-        assert len(etypes) == 0
-
-        for func in [local_maxima, local_minima]:
+        for func in [local_extrema, local_maxima, local_minima]:
             extrema = func(np.empty(0))
             assert len(extrema) == 0
 
     def test_single_item(self):
         '''This should return a zero length array.'''
-        extrema, etypes = local_extrema(np.array([1.]))
-        assert len(extrema) == 0
-        assert len(etypes) == 0
-
-        for func in [local_maxima, local_minima]:
+        for func in [local_extrema, local_maxima, local_minima]:
             extrema = func(np.array([1.]))
             assert len(extrema) == 0
 
@@ -199,14 +197,16 @@ class TestLocalExtrema(object):
             sig, extrema_idx, extrema_types = generate_sin(n_extrema)
             maxima = local_maxima(sig)
             assert len(maxima) == 1
-            assert np.all(extrema_idx[extrema_types == 1] == maxima)
+            assert np.all(extrema_idx[extrema_types == ExtremumTypes.MAX] ==
+                          maxima)
 
         # 2 maxima
         for n_extrema in [3, 4]:
             sig, extrema_idx, extrema_types = generate_sin(n_extrema)
             maxima = local_maxima(sig)
             assert len(maxima) == 2
-            assert np.all(extrema_idx[extrema_types == 1] == maxima)
+            assert np.all(extrema_idx[extrema_types == ExtremumTypes.MAX] ==
+                          maxima)
 
     def test_minima(self):
         # Only one maximum so should return empty
@@ -214,18 +214,68 @@ class TestLocalExtrema(object):
         sig, extrema_idx, extrema_types = generate_sin(n_extrema)
         minima = local_minima(sig)
         assert len(minima) == 0
-        assert np.all(extrema_idx[extrema_types == -1] == minima)
+        assert np.all(extrema_idx[extrema_types == ExtremumTypes.MIN] ==
+                      minima)
 
         # One maximum and minimum
         n_extrema = 2
         sig, extrema_idx, extrema_types = generate_sin(n_extrema)
         minima = local_minima(sig)
         assert len(minima) == 1
-        assert np.all(extrema_idx[extrema_types == -1] == minima)
+        assert np.all(extrema_idx[extrema_types == ExtremumTypes.MIN] ==
+                      minima)
 
         # 2 minima
         for n_extrema in [4, 5]:
             sig, extrema_idx, extrema_types = generate_sin(n_extrema)
             minima = local_minima(sig)
             assert len(minima) == 2
-            assert np.all(extrema_idx[extrema_types == -1] == minima)
+            assert np.all(extrema_idx[extrema_types == ExtremumTypes.MIN] ==
+                          minima)
+
+
+class TestLocalExtremaClass(object):
+    '''Test the local extremum object.'''
+    def test_empty(self):
+        extrema = LocalExtrema([], [])
+        assert len(extrema) == 0
+        assert len(extrema.get_type(ExtremumTypes.MIN)) == 0  # FIXME
+
+    def test_inconsistent_inputs(self):
+        with pytest.raises(IndexError):
+            extrema = LocalExtrema([], [1])
+        with pytest.raises(IndexError):
+            extrema = LocalExtrema(np.arange(10), [1])
+
+    def test_single_type(self):
+        N = 10
+        test_vector = np.arange(N)
+
+        for tested_type in ExtremumTypes:
+            extrema = LocalExtrema(test_vector, [tested_type] * N)
+            assert len(extrema) == N
+            for current_type in ExtremumTypes:
+                retrieved = extrema.get_type(current_type)
+                if current_type is tested_type:
+                    assert len(retrieved) == N
+                    assert np.all(retrieved == test_vector)
+                else:
+                    assert len(retrieved) == 0
+
+    def test_mixed_types(self):
+        N = 10
+        test_vector = np.arange(10)
+        test_types = np.ones(N) * ExtremumTypes.MIN
+        test_types[0:10:2] = ExtremumTypes.MAX
+        extrema = LocalExtrema(test_vector, test_types)
+        assert len(extrema) == N
+        retrieved_min = extrema.get_type(ExtremumTypes.MIN)
+        assert np.all(retrieved_min == test_vector[1:10:2])
+        retrieved_max = extrema.get_type(ExtremumTypes.MAX)
+        assert np.all(retrieved_max == test_vector[0:10:2])
+
+        # Should not find any other types
+        for current_type in ExtremumTypes:
+            if (current_type is not ExtremumTypes.MIN and current_type is not
+                ExtremumTypes.MAX):
+                assert len(extrema.get_type(current_type)) == 0
