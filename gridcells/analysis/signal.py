@@ -12,6 +12,7 @@ The can be e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
     local_extrema
     local_maxima
     local_minima
+    LocalExtrema
 '''
 from __future__ import absolute_import, print_function, division
 
@@ -26,7 +27,8 @@ __all__ = [
     'local_extrema',
     'local_minima',
     'local_maxima',
-    'ExtremumTypes'
+    'ExtremumTypes',
+    'LocalExtrema',
 ]
 
 
@@ -36,10 +38,13 @@ if not on_rtd:
     from . import _signal
 
 class ExtremumTypes(IntEnum):
-    '''A singleton class that specifies types of extrema.'''
+    '''Specifies types of extrema.'''
     UNDEFINED = 0
+    '''Undefined.'''
     MIN = 1
+    '''Local minimum.'''
     MAX = 2
+    '''Local maximum.'''
 
 
 def corr(a, b, mode='onesided', lag_start=None, lag_end=None):
@@ -238,8 +243,19 @@ def local_minima(sig):
 class LocalExtrema(object):
     '''A class representing local extrema for a particular object.
 
+    This is only a helper class. Users should not instantiate this class
+    directly
+
     .. note::
         For now only 1D extrema are supported.
+
+    Parameters
+    ----------
+    extrema : 1D numpy array
+        Positions of the extrema in a signal. The user must track the source.
+    types : 1D numpy array
+        Types of the extrema held in this object. Contains values from
+        :class:`~ExtremumTypes`.
     '''
     def __init__(self, extrema, types):
         self._extrema = np.asanyarray(extrema)
