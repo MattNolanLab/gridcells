@@ -125,5 +125,6 @@ setup(
     packages=all_packages,
     ext_modules=all_extensions,
     install_requires=['numpy>=1.8.0',
-                      'scipy>=0.13.3']
+                      'scipy>=0.13.3',
+                      'enum34>=1.0.4']
 )
