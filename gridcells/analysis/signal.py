@@ -9,6 +9,7 @@ The can be e.g. filtering, slicing, correlation analysis, up/down-sampling, etc.
 
     acorr
     corr
+    ExtremumTypes
     local_extrema
     local_maxima
     local_minima
