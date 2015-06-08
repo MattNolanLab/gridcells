@@ -2,6 +2,8 @@ Change log for gridcells
 
 ** Latest **
 
+** 0.1.3 **
+
 - Add LocalExtrema to analysis.signal. API of local_extrema has changed:
 returns LocalExtrema instead of a tuple.
 
